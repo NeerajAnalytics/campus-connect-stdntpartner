@@ -1,3 +1,4 @@
+
 "use client";
 import React from "react";
 import { Link } from "react-router-dom";
@@ -7,7 +8,6 @@ function InitialPage() {
     <div className="bg-gray-100 overflow-hidden">
       <div
         className="bg-gray-100 w-full pt-[34px] pb-[15px] px-[19px] max-md:max-w-full"
-        space={90}
       >
         <div className="gap-5 flex max-md:flex-col max-md:items-stretch">
           <div className="w-[18%] max-md:w-full max-md:ml-0">
@@ -67,11 +67,10 @@ function InitialPage() {
       <div className="bg-[rgba(125,155,210,1)] flex w-full flex-col items-stretch mt-[59px] py-[37px] max-md:max-w-full max-md:mt-10">
         <div
           className="w-full max-w-[1258px] ml-[45px] max-md:max-w-full"
-          space={42}
         >
           <div className="gap-5 flex max-md:flex-col max-md:items-stretch">
             <div className="w-[45%] max-md:w-full max-md:ml-0">
-              <div className="grow max-md:max-w-full max-md:mt-10" space={19}>
+              <div className="grow max-md:max-w-full max-md:mt-10">
                 <div className="gap-5 flex max-md:flex-col max-md:items-stretch">
                   <div className="w-[55%] max-md:w-full max-md:ml-0">
                     <div className="text-[32px] text-black font-normal max-md:mt-[19px]">
@@ -93,7 +92,7 @@ function InitialPage() {
               </div>
             </div>
             <div className="w-[55%] ml-5 max-md:w-full max-md:ml-0">
-              <div className="max-md:max-w-full max-md:mt-10" space={151}>
+              <div className="max-md:max-w-full max-md:mt-10">
                 <div className="gap-5 flex max-md:flex-col max-md:items-stretch">
                   <div className="w-[73%] max-md:w-full max-md:ml-0">
                     <div className="flex grow flex-col items-stretch text-[32px] text-black font-normal max-md:mt-10">
