@@ -1,27 +1,60 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
+import InitialPage from "./pages/InitialPage";
 
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+// This is a placeholder component for routes that are not yet implemented
+const UnderConstruction = () => (
+  <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+    <h1 className="text-4xl font-bold text-[rgba(21,62,117,1)] mb-4">
+      Under Construction
+    </h1>
+    <p className="text-xl text-[rgba(28,56,121,1)] mb-8">
+      This page is currently being developed. Please check back later.
+    </p>
+    <a
+      href="/"
+      className="bg-[rgba(26,78,138,1)] text-white py-2 px-6 rounded-lg hover:bg-[rgba(21,62,117,1)] transition-colors"
+    >
+      Return to Home
+    </a>
+  </div>
 );
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/initial" element={<InitialPage />} />
+        <Route path="/login" element={<UnderConstruction />} />
+        <Route path="/register" element={<UnderConstruction />} />
+        <Route path="/connect" element={<UnderConstruction />} />
+        <Route path="/accommodation" element={<UnderConstruction />} />
+        <Route path="/faq" element={<UnderConstruction />} />
+        <Route path="/terms" element={<UnderConstruction />} />
+        <Route
+          path="*"
+          element={
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+              <h1 className="text-4xl font-bold text-[rgba(21,62,117,1)] mb-4">
+                Page Not Found
+              </h1>
+              <p className="text-xl text-[rgba(28,56,121,1)] mb-8">
+                The page you are looking for doesn't exist or has been moved.
+              </p>
+              <a
+                href="/"
+                className="bg-[rgba(26,78,138,1)] text-white py-2 px-6 rounded-lg hover:bg-[rgba(21,62,117,1)] transition-colors"
+              >
+                Return to Home
+              </a>
+            </div>
+          }
+        />
+      </Routes>
+    </Router>
+  );
+}
 
 export default App;
