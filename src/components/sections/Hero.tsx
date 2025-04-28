@@ -29,7 +29,7 @@ const Hero: React.FC = () => {
       </div>
 
       <Link
-        to="/register"
+        to="/auth"
         className="mt-12 bg-[#1a4e8a] text-white px-12 py-3 rounded-full text-lg font-medium hover:bg-[#153e75] transition-colors"
       >
         Get started

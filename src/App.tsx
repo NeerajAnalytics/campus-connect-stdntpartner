@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import InitialPage from "./pages/InitialPage";
+import AuthPage from "./pages/AuthPage";
 
 // This is a placeholder component for routes that are not yet implemented
 const UnderConstruction = () => (
@@ -27,12 +28,13 @@ function App() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/initial" element={<InitialPage />} />
+        <Route path="/auth" element={<AuthPage />} />
         <Route path="/login" element={<UnderConstruction />} />
         <Route path="/register" element={<UnderConstruction />} />
-        <Route path="/connect" element={<UnderConstruction />} />
-        <Route path="/accommodation" element={<UnderConstruction />} />
-        <Route path="/faq" element={<UnderConstruction />} />
-        <Route path="/terms" element={<UnderConstruction />} />
+        <Route path="/connect" element={<AuthPage />} />
+        <Route path="/accommodation" element={<AuthPage />} />
+        <Route path="/faq" element={<AuthPage />} />
+        <Route path="/terms" element={<AuthPage />} />
         <Route
           path="*"
           element={
