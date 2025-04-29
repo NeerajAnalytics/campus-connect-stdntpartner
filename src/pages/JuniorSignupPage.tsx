@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Input } from "../components/ui/input";
 import Footer from "../components/layout/Footer";
 
-const JuniorLoginPage: React.FC = () => {
+const JuniorSignupPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-white font-['Poppins']">
       <header className="border-b border-gray-200">
@@ -24,7 +24,7 @@ const JuniorLoginPage: React.FC = () => {
           <div className="space-y-6">
             <div className="space-y-2">
               <label htmlFor="email" className="block font-medium">
-                G-Mail:
+                G-Mail
               </label>
               <Input
                 id="email"
@@ -34,8 +34,19 @@ const JuniorLoginPage: React.FC = () => {
             </div>
 
             <div className="space-y-2">
+              <label htmlFor="name" className="block font-medium">
+                Your Name
+              </label>
+              <Input
+                id="name"
+                type="text"
+                className="w-full border border-gray-300 rounded h-12"
+              />
+            </div>
+
+            <div className="space-y-2">
               <label htmlFor="password" className="block font-medium">
-                Password
+                Enter Password
               </label>
               <Input
                 id="password"
@@ -44,21 +55,34 @@ const JuniorLoginPage: React.FC = () => {
               />
             </div>
 
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="block font-medium">
+                Confirm Password
+              </label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                className="w-full border border-gray-300 rounded h-12"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="gender" className="block font-medium">
+                Gender
+              </label>
+              <Input
+                id="gender"
+                type="text"
+                className="w-full border border-gray-300 rounded h-12"
+              />
+            </div>
+
             <button
               type="button"
               className="w-full bg-[#7d9bd2] text-black py-2.5 px-4 rounded-full hover:bg-[#6b89c0] transition-colors"
             >
-              Login
+              Signup
             </button>
-
-            <div className="text-center pt-2">
-              <span className="text-sm">
-                Don't have an Account?{" "}
-                <Link to="/junior-signup" className="text-[#5c7bb5]">
-                  Signup
-                </Link>
-              </span>
-            </div>
           </div>
         </div>
       </main>
@@ -68,4 +92,4 @@ const JuniorLoginPage: React.FC = () => {
   );
 };
 
-export default JuniorLoginPage;
+export default JuniorSignupPage;
