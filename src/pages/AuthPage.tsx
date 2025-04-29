@@ -1,6 +1,8 @@
+
 import React from "react";
 import Footer from "../components/layout/Footer";
 import { Link } from "react-router-dom";
+
 const AuthPage: React.FC = () => {
   return <div className="min-h-screen flex flex-col bg-white font-['Poppins']">
       <main className="flex-grow flex flex-col items-center px-4 py-12">
@@ -13,7 +15,7 @@ const AuthPage: React.FC = () => {
         </h2>
 
         <div className="flex flex-col gap-4 mb-8 my-0 py-0 px-[35px] mx-0">
-          <Link to="/login" className="bg-[#1a4e8a] text-white rounded-full text-lg font-medium hover:bg-[#153e75] transition-colors mx-0 py-[11px] px-[76px] my-[43px]">
+          <Link to="/junior-login" className="bg-[#1a4e8a] text-white rounded-full text-lg font-medium hover:bg-[#153e75] transition-colors mx-0 py-[11px] px-[76px] my-[43px]">
             Junior
           </Link>
           <Link to="/register" className="bg-[#1a4e8a] text-white py-2.5 rounded-full text-lg font-medium hover:bg-[#153e75] transition-colors px-[76px]">
@@ -24,4 +26,5 @@ const AuthPage: React.FC = () => {
       <Footer />
     </div>;
 };
+
 export default AuthPage;

@@ -1,8 +1,10 @@
+
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import InitialPage from "./pages/InitialPage";
 import AuthPage from "./pages/AuthPage";
+import JuniorLoginPage from "./pages/JuniorLoginPage";
 
 // This is a placeholder component for routes that are not yet implemented
 const UnderConstruction = () => (
@@ -29,6 +31,7 @@ function App() {
         <Route path="/" element={<Index />} />
         <Route path="/initial" element={<InitialPage />} />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/junior-login" element={<JuniorLoginPage />} />
         <Route path="/login" element={<UnderConstruction />} />
         <Route path="/register" element={<UnderConstruction />} />
         <Route path="/connect" element={<AuthPage />} />
