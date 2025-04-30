@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 
@@ -14,7 +13,7 @@ const JuniorHomePage: React.FC = () => {
             </Link>
             
             <div className="flex items-center gap-8">
-              <Link to="/" className="text-gray-700 hover:text-gray-900">
+              <Link to="/junior-home" className="text-gray-700 hover:text-gray-900">
                 Home
               </Link>
               <Link to="/connect-with-senior" className="text-gray-700 hover:text-gray-900">
@@ -23,7 +22,7 @@ const JuniorHomePage: React.FC = () => {
               <Link to="/accommodation" className="text-gray-700 hover:text-gray-900">
                 Accommodation
               </Link>
-              <Link to="/profile" className="text-gray-700 hover:text-gray-900">
+              <Link to="/junior-profile" className="text-gray-700 hover:text-gray-900">
                 Profile
               </Link>
             </div>
@@ -148,7 +147,7 @@ const JuniorHomePage: React.FC = () => {
               CampusConnect
             </Link>
             <div className="flex items-center gap-8 text-sm">
-              <Link to="/" className="text-gray-700 hover:text-gray-900">
+              <Link to="/junior-home" className="text-gray-700 hover:text-gray-900">
                 Home
               </Link>
               <Link to="/faq" className="text-gray-700 hover:text-gray-900">

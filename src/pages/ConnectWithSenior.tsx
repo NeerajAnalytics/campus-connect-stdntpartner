@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Input } from "../components/ui/input";
@@ -24,7 +23,7 @@ const ConnectWithSenior: React.FC = () => {
               <Link to="/accommodation" className="text-gray-700 hover:text-gray-900">
                 Accommodation
               </Link>
-              <Link to="/profile" className="text-gray-700 hover:text-gray-900">
+              <Link to="/junior-profile" className="text-gray-700 hover:text-gray-900">
                 Profile
               </Link>
             </div>
