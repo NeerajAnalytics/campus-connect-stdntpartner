@@ -77,12 +77,12 @@ const JuniorSignupPage: React.FC = () => {
               />
             </div>
 
-            <button
-              type="button"
-              className="w-full bg-[#7d9bd2] text-black py-2.5 px-4 rounded-full hover:bg-[#6b89c0] transition-colors"
+            <Link 
+              to="/junior-login"
+              className="w-full block text-center bg-[#7d9bd2] text-black py-2.5 px-4 rounded-full hover:bg-[#6b89c0] transition-colors"
             >
               Signup
-            </button>
+            </Link>
           </div>
         </div>
       </main>
