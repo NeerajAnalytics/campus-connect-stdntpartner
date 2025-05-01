@@ -12,6 +12,7 @@ import JuniorProfilePage from "./pages/JuniorProfilePage";
 import JuniorEditPage from "./pages/JuniorEditPage";
 import JuniorReportPage from "./pages/JuniorReportPage";
 import JuniorFAQPage from "./pages/JuniorFAQPage";
+import JuniorTermsPage from "./pages/JuniorTermsPage";
 
 // This is a placeholder component for routes that are not yet implemented
 const UnderConstruction = () => (
@@ -46,6 +47,7 @@ function App() {
         <Route path="/junior-edit" element={<JuniorEditPage />} />
         <Route path="/junior-report" element={<JuniorReportPage />} />
         <Route path="/junior-faq" element={<JuniorFAQPage />} />
+        <Route path="/junior-terms" element={<JuniorTermsPage />} />
         <Route path="/login" element={<UnderConstruction />} />
         <Route path="/register" element={<UnderConstruction />} />
         <Route path="/connect" element={<AuthPage />} />
