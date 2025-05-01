@@ -175,7 +175,7 @@ const ConnectWithSenior: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-300">
+      <footer className="border-t border-gray-300 mt-auto">
         <div className="bg-white py-4">
           <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <Link to="/" className="text-[#5c7bb5] text-xl font-semibold">
@@ -185,7 +185,7 @@ const ConnectWithSenior: React.FC = () => {
               <Link to="/junior-home" className="text-gray-700 hover:text-gray-900">
                 Home
               </Link>
-              <Link to="/faq" className="text-gray-700 hover:text-gray-900">
+              <Link to="/junior-faq" className="text-gray-700 hover:text-gray-900">
                 FAQ's
               </Link>
               <Link to="/terms" className="text-gray-700 hover:text-gray-900">
