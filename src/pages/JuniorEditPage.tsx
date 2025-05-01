@@ -1,11 +1,20 @@
 
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 
-const JuniorProfilePage: React.FC = () => {
-  const navigate = useNavigate();
+const JuniorEditPage: React.FC = () => {
+  const [name, setName] = useState("I'm user");
+  const [gender, setGender] = useState("Male");
+  const [password, setPassword] = useState("helloworldpassword");
+
+  const handleSave = () => {
+    // Here would go the logic to save the updated profile
+    // For now, we'll just redirect back to the profile page
+    window.location.href = "/junior-profile";
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#edf1f8] font-['Poppins']">
@@ -63,42 +72,46 @@ const JuniorProfilePage: React.FC = () => {
           <div className="space-y-6 mb-6">
             <div>
               <h3 className="font-semibold mb-1">Name</h3>
-              <p className="text-gray-800">I'm user</p>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-1">G Mail</h3>
-              <p className="text-gray-800">helloworld@gmail.com</p>
+              <Input 
+                type="text" 
+                placeholder="Enter New Name" 
+                value={name} 
+                onChange={(e) => setName(e.target.value)}
+                className="border-gray-300"
+              />
             </div>
             
             <div>
               <h3 className="font-semibold mb-1">Gender</h3>
-              <p className="text-gray-800">Male</p>
+              <Input 
+                type="text" 
+                placeholder="Male" 
+                value={gender} 
+                onChange={(e) => setGender(e.target.value)}
+                className="border-gray-300"
+              />
             </div>
             
             <div>
               <h3 className="font-semibold mb-1">Password</h3>
-              <p className="text-gray-800">helloworldpassword</p>
+              <Input 
+                type="password" 
+                placeholder="Enter New Password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)}
+                className="border-gray-300"
+              />
             </div>
           </div>
           
           <hr className="border-gray-300 mb-6" />
           
-          <div className="flex justify-between">
+          <div className="flex justify-end">
             <Button
-              variant="secondary"
-              className="bg-[#7d9bd2] text-black hover:bg-[#6b89c0] rounded-md"
-              onClick={() => navigate('/junior-report')}
+              onClick={handleSave}
+              className="bg-[#7d9bd2] text-black hover:bg-[#6b89c0] rounded-md px-8"
             >
-              Report an Issue
-            </Button>
-            
-            <Button
-              variant="secondary"
-              className="bg-[#7d9bd2] text-black hover:bg-[#6b89c0] rounded-md"
-              onClick={() => navigate('/junior-edit')}
-            >
-              Edit
+              Save
             </Button>
           </div>
         </div>
@@ -132,4 +145,4 @@ const JuniorProfilePage: React.FC = () => {
   );
 };
 
-export default JuniorProfilePage;
+export default JuniorEditPage;
