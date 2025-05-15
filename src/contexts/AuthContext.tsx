@@ -1,7 +1,6 @@
-
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, getProfiles } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { Profile } from "@/types/database";
@@ -129,11 +128,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (data.name) updateData.name = data.name;
         if (data.gender) updateData.gender = data.gender;
 
-        // Cast to any to bypass type checking for the tables
-        const { error: profileError } = await (supabase
-          .from('profiles') as any)
+        // Use the type-safe helper function
+        const { error: profileError } = await getProfiles()
           .update(updateData)
-          .eq('id', user?.id);
+          .eq('id', user?.id as string);
 
         if (profileError) throw profileError;
       }

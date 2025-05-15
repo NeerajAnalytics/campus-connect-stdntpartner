@@ -3,7 +3,6 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
 interface ReportData {
-  user_id: string;
   name: string;
   email: string;
   phone?: string;
@@ -16,43 +15,48 @@ interface ReportData {
   senior_college_id?: string;
 }
 
-const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
+interface RequestData {
+  reportData: ReportData;
+}
+
+serve(async (req) => {
+  // Handle CORS
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: corsHeaders,
-    });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const { reportData } = await req.json() as { reportData: ReportData };
+    const { reportData } = await req.json() as RequestData;
+    
+    // Log the report data for now (in a real app, you would send an email)
+    console.log("Received report from:", reportData.name);
+    console.log("Issue description:", reportData.issue_description);
+    
+    // Here you would typically send an email notification
+    // For example, using a service like Resend.com
 
-    console.log("Received report submission:", reportData);
-
-    // In a real implementation, we would use an email service like Resend, SendGrid, etc.
-    // For now, we'll just log the attempt
-    console.log(`Would send email to stdntpartner@gmail.com with the following data:`, reportData);
-
-    // Return success response
     return new Response(
-      JSON.stringify({
-        message: "Report email notification queued successfully",
-      }),
+      JSON.stringify({ success: true, message: "Report notification received" }),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
         status: 200,
       }
     );
   } catch (error) {
-    console.error("Error in send-report function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({
+        error: error.message || "An unknown error occurred",
+      }),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
         status: 500,
       }
     );
   }
-};
-
-serve(handler);
+});

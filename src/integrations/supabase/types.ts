@@ -9,7 +9,78 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string | null
+          gender: string | null
+          id: string
+          name: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          gender?: string | null
+          id: string
+          name?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          gender?: string | null
+          id?: string
+          name?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          issue_description: string
+          name: string
+          phone: string | null
+          proofs: string | null
+          senior_branch: string | null
+          senior_college_id: string | null
+          senior_email: string | null
+          senior_name: string | null
+          senior_phone: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          issue_description: string
+          name: string
+          phone?: string | null
+          proofs?: string | null
+          senior_branch?: string | null
+          senior_college_id?: string | null
+          senior_email?: string | null
+          senior_name?: string | null
+          senior_phone?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          issue_description?: string
+          name?: string
+          phone?: string | null
+          proofs?: string | null
+          senior_branch?: string | null
+          senior_college_id?: string | null
+          senior_email?: string | null
+          senior_name?: string | null
+          senior_phone?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

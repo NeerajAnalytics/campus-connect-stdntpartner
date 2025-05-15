@@ -1,9 +1,10 @@
+
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { getProfiles } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { Profile } from "@/types/database";
 
@@ -24,16 +25,15 @@ const JuniorProfilePage: React.FC = () => {
       setLoading(true);
       if (!user) return;
 
-      // Use type assertion to bypass TypeScript checking
-      const { data, error } = await (supabase
-        .from('profiles') as any)
+      // Use type-safe helper function
+      const { data, error } = await getProfiles()
         .select('*')
         .eq('id', user.id)
         .single();
 
       if (error) throw error;
       
-      setProfile(data);
+      setProfile(data as Profile);
     } catch (error: any) {
       toast({
         title: "Error fetching profile",

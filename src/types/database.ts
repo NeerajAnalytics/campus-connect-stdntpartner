@@ -13,13 +13,19 @@ export interface Report {
   user_id: string;
   name: string;
   email: string;
-  phone?: string;
+  phone?: string | null;
   issue_description: string;
-  proofs?: string;
-  senior_name?: string;
-  senior_branch?: string;
-  senior_phone?: string;
-  senior_email?: string;
-  senior_college_id?: string;
+  proofs?: string | null;
+  senior_name?: string | null;
+  senior_branch?: string | null;
+  senior_phone?: string | null;
+  senior_email?: string | null;
+  senior_college_id?: string | null;
   created_at: string;
+}
+
+// Add table type definitions for type-safe database access
+export interface Tables {
+  profiles: Profile;
+  reports: Report;
 }

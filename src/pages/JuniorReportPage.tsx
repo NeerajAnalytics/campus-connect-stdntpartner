@@ -1,10 +1,11 @@
+
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, getReports } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { Report } from "@/types/database";
 
@@ -62,10 +63,9 @@ const JuniorReportPage: React.FC = () => {
         senior_college_id: seniorCollegeId
       };
 
-      // Use type assertion to bypass TypeScript checking
-      const { error: saveError } = await (supabase
-        .from('reports') as any)
-        .insert(reportData);
+      // Use type-safe helper function
+      const { error: saveError } = await getReports()
+        .insert(reportData as any);
 
       if (saveError) throw saveError;
 
