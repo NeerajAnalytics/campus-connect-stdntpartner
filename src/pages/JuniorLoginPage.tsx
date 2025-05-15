@@ -1,10 +1,28 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
 import Footer from "../components/layout/Footer";
+import { useAuth } from "@/contexts/AuthContext";
 
 const JuniorLoginPage: React.FC = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { signIn } = useAuth();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      await signIn(email, password);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-white font-['Poppins']">
       <header className="border-b border-gray-200">
@@ -21,7 +39,7 @@ const JuniorLoginPage: React.FC = () => {
 
       <main className="flex-grow flex flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md space-y-8">
-          <div className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
               <label htmlFor="email" className="block font-medium">
                 G-Mail:
@@ -29,7 +47,10 @@ const JuniorLoginPage: React.FC = () => {
               <Input
                 id="email"
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full border border-gray-300 rounded h-12"
+                disabled={isLoading}
               />
             </div>
 
@@ -40,16 +61,20 @@ const JuniorLoginPage: React.FC = () => {
               <Input
                 id="password"
                 type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full border border-gray-300 rounded h-12"
+                disabled={isLoading}
               />
             </div>
 
-            <Link 
-              to="/junior-home"
+            <Button
+              type="submit"
               className="w-full block text-center bg-[#7d9bd2] text-black py-2.5 px-4 rounded-full hover:bg-[#6b89c0] transition-colors"
+              disabled={isLoading}
             >
-              Login
-            </Link>
+              {isLoading ? "Logging in..." : "Login"}
+            </Button>
 
             <div className="text-center pt-2">
               <span className="text-sm">
@@ -59,7 +84,7 @@ const JuniorLoginPage: React.FC = () => {
                 </Link>
               </span>
             </div>
-          </div>
+          </form>
         </div>
       </main>
 

@@ -1,20 +1,88 @@
 
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
+
+interface Profile {
+  id: string;
+  name: string;
+  gender: string;
+}
 
 const JuniorEditPage: React.FC = () => {
-  const [name, setName] = useState("I'm user");
-  const [gender, setGender] = useState("Male");
-  const [password, setPassword] = useState("helloworldpassword");
+  const navigate = useNavigate();
+  const { user, updateProfile } = useAuth();
+  const [name, setName] = useState("");
+  const [gender, setGender] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
-    // Here would go the logic to save the updated profile
-    // For now, we'll just redirect back to the profile page
-    window.location.href = "/junior-profile";
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      
+      if (data) {
+        setName(data.name || '');
+        setGender(data.gender || '');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error fetching profile",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    
+    try {
+      const updateData: {name?: string; gender?: string; password?: string} = {};
+      
+      if (name) updateData.name = name;
+      if (gender) updateData.gender = gender;
+      if (password) updateData.password = password;
+
+      await updateProfile(updateData);
+      navigate("/junior-profile");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5c7bb5]"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#edf1f8] font-['Poppins']">
@@ -78,28 +146,34 @@ const JuniorEditPage: React.FC = () => {
                 value={name} 
                 onChange={(e) => setName(e.target.value)}
                 className="border-gray-300"
+                disabled={isSaving}
               />
             </div>
             
             <div>
               <h3 className="font-semibold mb-1">Gender</h3>
-              <Input 
-                type="text" 
-                placeholder="Male" 
-                value={gender} 
+              <select
+                value={gender}
                 onChange={(e) => setGender(e.target.value)}
-                className="border-gray-300"
-              />
+                className="w-full border border-gray-300 rounded h-12 px-3"
+                disabled={isSaving}
+              >
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
             
             <div>
               <h3 className="font-semibold mb-1">Password</h3>
               <Input 
                 type="password" 
-                placeholder="Enter New Password" 
+                placeholder="Enter New Password (leave empty to keep current)" 
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)}
                 className="border-gray-300"
+                disabled={isSaving}
               />
             </div>
           </div>
@@ -110,8 +184,9 @@ const JuniorEditPage: React.FC = () => {
             <Button
               onClick={handleSave}
               className="bg-[#7d9bd2] text-black hover:bg-[#6b89c0] rounded-md px-8"
+              disabled={isSaving}
             >
-              Save
+              {isSaving ? "Saving..." : "Save"}
             </Button>
           </div>
         </div>

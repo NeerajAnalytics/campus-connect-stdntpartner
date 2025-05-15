@@ -1,11 +1,66 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
+
+interface Profile {
+  id: string;
+  name: string;
+  gender: string;
+}
 
 const JuniorProfilePage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      
+      setProfile(data);
+    } catch (error: any) {
+      toast({
+        title: "Error fetching profile",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5c7bb5]"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#edf1f8] font-['Poppins']">
@@ -30,6 +85,13 @@ const JuniorProfilePage: React.FC = () => {
               <Link to="/junior-profile" className="text-gray-700 hover:text-gray-900">
                 Profile
               </Link>
+              <Button 
+                variant="ghost"
+                className="text-gray-700 hover:text-gray-900" 
+                onClick={handleSignOut}
+              >
+                Sign Out
+              </Button>
             </div>
           </div>
         </div>
@@ -63,22 +125,22 @@ const JuniorProfilePage: React.FC = () => {
           <div className="space-y-6 mb-6">
             <div>
               <h3 className="font-semibold mb-1">Name</h3>
-              <p className="text-gray-800">I'm user</p>
+              <p className="text-gray-800">{profile?.name || 'Not set'}</p>
             </div>
             
             <div>
               <h3 className="font-semibold mb-1">G Mail</h3>
-              <p className="text-gray-800">helloworld@gmail.com</p>
+              <p className="text-gray-800">{user?.email}</p>
             </div>
             
             <div>
               <h3 className="font-semibold mb-1">Gender</h3>
-              <p className="text-gray-800">Male</p>
+              <p className="text-gray-800">{profile?.gender || 'Not set'}</p>
             </div>
             
             <div>
               <h3 className="font-semibold mb-1">Password</h3>
-              <p className="text-gray-800">helloworldpassword</p>
+              <p className="text-gray-800">••••••••</p>
             </div>
           </div>
           

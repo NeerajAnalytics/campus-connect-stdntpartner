@@ -1,16 +1,109 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 const JuniorReportPage: React.FC = () => {
-  const handleSubmit = (e: React.FormEvent) => {
+  const { user } = useAuth();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [issueDescription, setIssueDescription] = useState("");
+  const [proofs, setProofs] = useState("");
+  const [seniorName, setSeniorName] = useState("");
+  const [seniorBranch, setSeniorBranch] = useState("");
+  const [seniorPhone, setSeniorPhone] = useState("");
+  const [seniorEmail, setSeniorEmail] = useState("");
+  const [seniorCollegeId, setSeniorCollegeId] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here would go the logic to submit the report
-    // For now, we'll just redirect back to the profile page
-    window.location.href = "/junior-profile";
+    
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to submit a report",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Basic validation
+    if (!name || !email || !issueDescription) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Save report to database
+      const reportData = {
+        user_id: user.id,
+        name,
+        email,
+        phone,
+        issue_description: issueDescription,
+        proofs,
+        senior_name: seniorName,
+        senior_branch: seniorBranch,
+        senior_phone: seniorPhone,
+        senior_email: seniorEmail,
+        senior_college_id: seniorCollegeId
+      };
+
+      const { error: saveError } = await supabase
+        .from('reports')
+        .insert(reportData);
+
+      if (saveError) throw saveError;
+
+      // Send email notification using edge function
+      const { error: emailError } = await supabase.functions.invoke('send-report', {
+        body: { reportData }
+      });
+
+      if (emailError) throw emailError;
+
+      toast({
+        title: "Report Submitted",
+        description: "Your report has been submitted successfully. We'll get back to you soon.",
+      });
+
+      // Reset form
+      setName("");
+      setEmail("");
+      setPhone("");
+      setIssueDescription("");
+      setProofs("");
+      setSeniorName("");
+      setSeniorBranch("");
+      setSeniorPhone("");
+      setSeniorEmail("");
+      setSeniorCollegeId("");
+
+      // Redirect to profile page
+      window.location.href = "/junior-profile";
+
+    } catch (error: any) {
+      toast({
+        title: "Error submitting report",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -54,7 +147,14 @@ const JuniorReportPage: React.FC = () => {
               <div className="w-40 font-semibold">Your Name</div>
               <div className="text-xl">:</div>
               <div className="flex-1 ml-2">
-                <Input type="text" className="border-gray-300" />
+                <Input 
+                  type="text" 
+                  className="border-gray-300" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  disabled={isSubmitting}
+                  required
+                />
               </div>
             </div>
             
@@ -62,7 +162,14 @@ const JuniorReportPage: React.FC = () => {
               <div className="w-40 font-semibold">Your Mail ID</div>
               <div className="text-xl">:</div>
               <div className="flex-1 ml-2">
-                <Input type="email" className="border-gray-300" />
+                <Input 
+                  type="email" 
+                  className="border-gray-300" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isSubmitting}
+                  required
+                />
               </div>
             </div>
             
@@ -70,20 +177,40 @@ const JuniorReportPage: React.FC = () => {
               <div className="w-40 font-semibold">Your Phone No</div>
               <div className="text-xl">:</div>
               <div className="flex-1 ml-2">
-                <Input type="tel" className="border-gray-300" />
+                <Input 
+                  type="tel" 
+                  className="border-gray-300" 
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  disabled={isSubmitting}
+                />
               </div>
             </div>
             
             <div className="mb-4">
               <div className="font-semibold mb-2">Describe The Issue:</div>
-              <Textarea className="w-full border-gray-300" rows={3} />
+              <Textarea 
+                className="w-full border-gray-300" 
+                rows={3} 
+                value={issueDescription}
+                onChange={(e) => setIssueDescription(e.target.value)}
+                disabled={isSubmitting}
+                required
+              />
             </div>
             
             <div className="flex items-start mb-4">
               <div className="w-40 font-semibold">Proofs (IF ANY)</div>
               <div className="text-xl">:</div>
               <div className="flex-1 ml-2">
-                <Input type="text" className="border-gray-300" />
+                <Input 
+                  type="text" 
+                  className="border-gray-300" 
+                  value={proofs}
+                  onChange={(e) => setProofs(e.target.value)}
+                  disabled={isSubmitting}
+                  placeholder="Links to screenshots or documents"
+                />
               </div>
             </div>
             
@@ -96,7 +223,13 @@ const JuniorReportPage: React.FC = () => {
                 <div className="w-28 font-semibold">Name</div>
                 <div className="text-xl">:</div>
                 <div className="flex-1 ml-2">
-                  <Input type="text" className="border-gray-300" />
+                  <Input 
+                    type="text" 
+                    className="border-gray-300" 
+                    value={seniorName}
+                    onChange={(e) => setSeniorName(e.target.value)}
+                    disabled={isSubmitting}
+                  />
                 </div>
               </div>
               
@@ -104,7 +237,13 @@ const JuniorReportPage: React.FC = () => {
                 <div className="w-28 font-semibold">Branch</div>
                 <div className="text-xl">:</div>
                 <div className="flex-1 ml-2">
-                  <Input type="text" className="border-gray-300" />
+                  <Input 
+                    type="text" 
+                    className="border-gray-300" 
+                    value={seniorBranch}
+                    onChange={(e) => setSeniorBranch(e.target.value)}
+                    disabled={isSubmitting}
+                  />
                 </div>
               </div>
               
@@ -112,7 +251,13 @@ const JuniorReportPage: React.FC = () => {
                 <div className="w-28 font-semibold">Phone No</div>
                 <div className="text-xl">:</div>
                 <div className="flex-1 ml-2">
-                  <Input type="tel" className="border-gray-300" />
+                  <Input 
+                    type="tel" 
+                    className="border-gray-300" 
+                    value={seniorPhone}
+                    onChange={(e) => setSeniorPhone(e.target.value)}
+                    disabled={isSubmitting}
+                  />
                 </div>
               </div>
               
@@ -120,7 +265,13 @@ const JuniorReportPage: React.FC = () => {
                 <div className="w-28 font-semibold">G-Mail</div>
                 <div className="text-xl">:</div>
                 <div className="flex-1 ml-2">
-                  <Input type="email" className="border-gray-300" />
+                  <Input 
+                    type="email" 
+                    className="border-gray-300" 
+                    value={seniorEmail}
+                    onChange={(e) => setSeniorEmail(e.target.value)}
+                    disabled={isSubmitting}
+                  />
                 </div>
               </div>
               
@@ -128,7 +279,13 @@ const JuniorReportPage: React.FC = () => {
                 <div className="w-28 font-semibold">College ID</div>
                 <div className="text-xl">:</div>
                 <div className="flex-1 ml-2">
-                  <Input type="text" className="border-gray-300" />
+                  <Input 
+                    type="text" 
+                    className="border-gray-300" 
+                    value={seniorCollegeId}
+                    onChange={(e) => setSeniorCollegeId(e.target.value)}
+                    disabled={isSubmitting}
+                  />
                 </div>
               </div>
             </div>
@@ -139,8 +296,9 @@ const JuniorReportPage: React.FC = () => {
               <Button
                 type="submit"
                 className="bg-[#7d9bd2] text-black hover:bg-[#6b89c0] rounded-md px-8"
+                disabled={isSubmitting}
               >
-                Submit
+                {isSubmitting ? "Submitting..." : "Submit"}
               </Button>
             </div>
           </form>
