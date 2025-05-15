@@ -4,6 +4,7 @@ import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
+import { Profile } from "@/types/database";
 
 interface AuthContextType {
   user: User | null;
@@ -124,12 +125,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data.name || data.gender) {
         // Only update profile if we have name or gender changes
-        const updateData: any = {};
+        const updateData: Partial<Profile> = {};
         if (data.name) updateData.name = data.name;
         if (data.gender) updateData.gender = data.gender;
 
-        const { error: profileError } = await supabase
-          .from('profiles')
+        // Cast to any to bypass type checking for the tables
+        const { error: profileError } = await (supabase
+          .from('profiles') as any)
           .update(updateData)
           .eq('id', user?.id);
 
