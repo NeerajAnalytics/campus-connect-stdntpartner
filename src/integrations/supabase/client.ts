@@ -14,9 +14,9 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 
 // Type-safe helper functions
 export const getProfiles = () => {
-  return supabase.from('profiles') as unknown as ReturnType<typeof supabase.from<Tables['profiles']>>;
+  return supabase.from('profiles');
 };
 
 export const getReports = () => {
-  return supabase.from('reports') as unknown as ReturnType<typeof supabase.from<Tables['reports']>>;
+  return supabase.from('reports');
 };

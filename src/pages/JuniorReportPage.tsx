@@ -65,7 +65,7 @@ const JuniorReportPage: React.FC = () => {
 
       // Use type-safe helper function
       const { error: saveError } = await getReports()
-        .insert(reportData as any);
+        .insert(reportData);
 
       if (saveError) throw saveError;
 
