@@ -25,15 +25,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+      (event, newSession) => {
+        // Only update with synchronous state updates here
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        
+        // Use setTimeout to avoid deadlock with other Supabase calls
+        if (newSession?.user && event === 'SIGNED_IN') {
+          setTimeout(() => {
+            // Create a profile for the user if it doesn't exist
+            createProfileIfNotExists(newSession.user.id);
+          }, 0);
+        }
       }
     );
 
-    // Check for existing session
+    // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -42,11 +51,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, []);
+  
+  // Helper function to create a profile if it doesn't exist
+  const createProfileIfNotExists = async (userId: string) => {
+    try {
+      // Check if profile exists
+      const { data: existingProfile, error: fetchError } = await getProfiles()
+        .select()
+        .eq('id', userId)
+        .maybeSingle();
+        
+      if (fetchError) throw fetchError;
+      
+      // If no profile exists, create one
+      if (!existingProfile) {
+        const userData = user?.user_metadata;
+        const { error: insertError } = await getProfiles().insert({
+          id: userId,
+          name: userData?.name || null,
+          gender: userData?.gender || null,
+        });
+        
+        if (insertError) throw insertError;
+      }
+    } catch (error) {
+      console.error("Error checking/creating profile:", error);
+    }
+  };
 
   const signUp = async (email: string, password: string, name: string, gender: string) => {
     try {
-      // For this implementation, let's disable email verification
-      // This will allow users to sign in immediately after registering
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -63,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       toast({
         title: "Sign up successful!",
-        description: "You can now log in with your new account.",
+        description: "Please check your email to confirm your account before logging in.",
       });
 
       navigate("/junior-login");
@@ -84,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        // Handle the specific "Email not confirmed" error
+        // If the error mentions email not confirmed, provide specific guidance
         if (error.message.includes("Email not confirmed")) {
           // Send another confirmation email
           await supabase.auth.resend({
@@ -101,6 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         title: "Signed in successfully!",
       });
 
+      // Successfully signed in, now navigate to the home page
       navigate("/junior-home");
     } catch (error: any) {
       throw error;
@@ -122,8 +157,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateProfile = async (data: {name?: string; gender?: string; password?: string}) => {
     try {
-      const updates: any = {};
-      
       if (data.password) {
         // Update password
         const { error: passwordError } = await supabase.auth.updateUser({
@@ -139,10 +172,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (data.name) updateData.name = data.name;
         if (data.gender) updateData.gender = data.gender;
 
+        if (!user) throw new Error("User not authenticated");
+
         // Use the type-safe helper function
         const { error: profileError } = await getProfiles()
           .update(updateData)
-          .eq('id', user?.id as string);
+          .eq('id', user.id);
 
         if (profileError) throw profileError;
       }

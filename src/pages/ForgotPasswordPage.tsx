@@ -25,19 +25,39 @@ const ForgotPasswordPage: React.FC = () => {
 
     setIsLoading(true);
     try {
+      // First, check if the user exists
+      const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email);
+      
+      if (userError || !user) {
+        toast({
+          title: "User not found",
+          description: "No account exists with this email address",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       // Initiate the password reset process
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (error) throw error;
-
-      // For demo purposes, we'll redirect to the verification page
-      // In a real app, the user would receive an email with a link
+      
+      // For the purpose of the app, we'll simulate a verification code
+      // Generate a 6-digit code and store it in sessionStorage
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      sessionStorage.setItem(`vcode_${email}`, verificationCode);
+      
+      // In a real app, this code would be sent via email
+      console.log("Verification code for testing:", verificationCode);
+      
+      // Navigate to the verification code page
       navigate(`/verification-code?email=${encodeURIComponent(email)}`);
       
       toast({
-        title: "Reset email sent",
+        title: "Verification code sent",
         description: "Check your email for the verification code",
       });
     } catch (error: any) {

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
@@ -14,7 +14,6 @@ const ResetPasswordPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
-  // In a real implementation, you'd use the code from the URL to validate
   const email = searchParams.get("email") || "";
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,27 +40,52 @@ const ResetPasswordPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // In a real app with Supabase, you would use the token from the URL to update the password
-      // For now, we'll use the available API to create a fake update
-      const { error } = await supabase.auth.updateUser({
+      // Get the current session
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        // If there's no session, try to get a recovery session from the email
+        if (!email) {
+          throw new Error("No email provided for password reset");
+        }
+
+        // For this demo, we'll need to sign in the user temporarily to update their password
+        // Note: In a real app with proper backend, this would be handled differently
+        // This is just for demonstration purposes
+        const { error: signInError } = await supabase.auth.signInWithOtp({
+          email: email,
+        });
+
+        if (signInError) throw signInError;
+        
+        // Small delay to ensure the OTP is processed
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      // Update the password
+      const { error: updateError } = await supabase.auth.updateUser({
         password: password
       });
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
       toast({
         title: "Password updated",
         description: "Your password has been reset successfully"
       });
       
+      // Sign out after password reset
+      await supabase.auth.signOut();
+      
       // Redirect to the login page
       setTimeout(() => {
         navigate("/junior-login");
       }, 2000);
     } catch (error: any) {
+      console.error("Password reset error:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to reset password",
+        description: error.message || "Failed to reset password. Please try again.",
         variant: "destructive",
       });
     } finally {

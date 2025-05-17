@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "../components/ui/button";
@@ -30,12 +31,19 @@ const VerificationCodePage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // In a real app, we would verify the code with the backend
-      // For now, we'll just simulate a successful verification
-      // This is a placeholder - in a real implementation, you'd call an API endpoint
+      // In a real app, we would verify the code with a backend API
+      // For this example, we'll verify against our simulated code in sessionStorage
+      const storedCode = sessionStorage.getItem(`vcode_${email}`);
+      
+      if (!storedCode || storedCode !== verificationCode) {
+        throw new Error("Invalid verification code. Please try again.");
+      }
+      
+      // Clear the verification code from sessionStorage
+      sessionStorage.removeItem(`vcode_${email}`);
       
       // Redirect to the reset password page
-      navigate(`/reset-password?email=${encodeURIComponent(email)}&code=${verificationCode}`);
+      navigate(`/reset-password?email=${encodeURIComponent(email)}`);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -51,12 +59,19 @@ const VerificationCodePage: React.FC = () => {
     if (!email) return;
     
     try {
-      // Resend the verification code
+      // Initiate the password reset process again
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (error) throw error;
+
+      // Generate a new verification code
+      const newVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      sessionStorage.setItem(`vcode_${email}`, newVerificationCode);
+      
+      // In a real app, this code would be sent via email
+      console.log("New verification code for testing:", newVerificationCode);
 
       toast({
         title: "Code resent",
@@ -91,6 +106,9 @@ const VerificationCodePage: React.FC = () => {
             <h1 className="text-2xl font-semibold text-gray-900">Verification Code</h1>
             <p className="mt-2 text-sm text-gray-600">
               Enter the 6-digit code sent to {email}
+            </p>
+            <p className="mt-2 text-sm text-gray-500 italic">
+              (Check your console for the code in this demo)
             </p>
           </div>
 

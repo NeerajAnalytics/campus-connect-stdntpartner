@@ -20,6 +20,7 @@ const JuniorLoginPage: React.FC = () => {
     
     try {
       await signIn(email, password);
+      // The navigation happens in the signIn function after successful login
     } catch (error: any) {
       toast({
         title: "Login failed",
