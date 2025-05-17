@@ -1,8 +1,16 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
+import { Button } from "../ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ProfileHeader: React.FC = () => {
+  const { signOut } = useAuth();
+  
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <header className="bg-[#edf1f8] border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 py-4">
@@ -24,6 +32,13 @@ const ProfileHeader: React.FC = () => {
             <Link to="/junior-profile" className="text-gray-700 hover:text-gray-900">
               Profile
             </Link>
+            <Button 
+              variant="ghost"
+              className="text-gray-700 hover:text-gray-900" 
+              onClick={handleSignOut}
+            >
+              Sign Out
+            </Button>
           </div>
         </div>
       </div>
