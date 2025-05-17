@@ -15,6 +15,9 @@ import JuniorEditPage from "./pages/JuniorEditPage";
 import JuniorReportPage from "./pages/JuniorReportPage";
 import JuniorFAQPage from "./pages/JuniorFAQPage";
 import JuniorTermsPage from "./pages/JuniorTermsPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import VerificationCodePage from "./pages/VerificationCodePage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 // This is a placeholder component for routes that are not yet implemented
@@ -45,6 +48,9 @@ function App() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/junior-login" element={<JuniorLoginPage />} />
           <Route path="/junior-signup" element={<JuniorSignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/verification-code" element={<VerificationCodePage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route 
             path="/junior-home" 
             element={

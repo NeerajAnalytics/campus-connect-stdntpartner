@@ -4,26 +4,46 @@ import { Link, useNavigate } from "react-router-dom";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import Footer from "../components/layout/Footer";
-import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
-const JuniorLoginPage: React.FC = () => {
+const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
-    
     try {
-      await signIn(email, password);
+      // Initiate the password reset process
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      // For demo purposes, we'll redirect to the verification page
+      // In a real app, the user would receive an email with a link
+      navigate(`/verification-code?email=${encodeURIComponent(email)}`);
+      
+      toast({
+        title: "Reset email sent",
+        description: "Check your email for the verification code",
+      });
     } catch (error: any) {
       toast({
-        title: "Login failed",
-        description: error.message,
+        title: "Error",
+        description: error.message || "Failed to send reset email",
         variant: "destructive",
       });
     } finally {
@@ -41,16 +61,23 @@ const JuniorLoginPage: React.FC = () => {
           <Link to="/" className="text-[#5c7bb5] text-2xl font-semibold">
             CampusConnect
           </Link>
-          <div className="w-[50px]"></div> {/* Empty div for alignment */}
+          <div className="w-[50px]"></div>
         </div>
       </header>
 
       <main className="flex-grow flex flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md space-y-8">
-          <form onSubmit={handleLogin} className="space-y-6">
+          <div className="text-center">
+            <h1 className="text-2xl font-semibold text-gray-900">Forgot Password</h1>
+            <p className="mt-2 text-sm text-gray-600">
+              Enter your email to receive a verification code
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
             <div className="space-y-2">
               <label htmlFor="email" className="block font-medium">
-                G-Mail:
+                Email
               </label>
               <Input
                 id="email"
@@ -58,28 +85,10 @@ const JuniorLoginPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full border border-gray-300 rounded h-12"
+                placeholder="Enter your email"
+                required
                 disabled={isLoading}
               />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="password" className="block font-medium">
-                Password
-              </label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-gray-300 rounded h-12"
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="flex justify-end">
-              <Link to="/forgot-password" className="text-sm text-[#5c7bb5] hover:underline">
-                Forgot Password?
-              </Link>
             </div>
 
             <Button
@@ -87,16 +96,16 @@ const JuniorLoginPage: React.FC = () => {
               className="w-full block text-center bg-[#7d9bd2] text-black py-2.5 px-4 rounded-full hover:bg-[#6b89c0] transition-colors"
               disabled={isLoading}
             >
-              {isLoading ? "Logging in..." : "Login"}
+              {isLoading ? "Sending..." : "Send Verification Code"}
             </Button>
 
-            <div className="text-center pt-2">
-              <span className="text-sm">
-                Don't have an Account?{" "}
-                <Link to="/junior-signup" className="text-[#5c7bb5]">
-                  Signup
-                </Link>
-              </span>
+            <div className="text-center mt-4">
+              <Link
+                to="/junior-login"
+                className="text-sm text-[#5c7bb5] hover:underline"
+              >
+                Back to Login
+              </Link>
             </div>
           </form>
         </div>
@@ -107,4 +116,4 @@ const JuniorLoginPage: React.FC = () => {
   );
 };
 
-export default JuniorLoginPage;
+export default ForgotPasswordPage;

@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase, getProfiles } from "@/integrations/supabase/client";
@@ -44,6 +45,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, name: string, gender: string) => {
     try {
+      // For this implementation, let's disable email verification
+      // This will allow users to sign in immediately after registering
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -59,8 +62,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
 
       toast({
-        title: "Verification email sent!",
-        description: "Please check your email to verify your account before logging in.",
+        title: "Sign up successful!",
+        description: "You can now log in with your new account.",
       });
 
       navigate("/junior-login");
@@ -75,12 +78,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error, data } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle the specific "Email not confirmed" error
+        if (error.message.includes("Email not confirmed")) {
+          // Send another confirmation email
+          await supabase.auth.resend({
+            type: 'signup',
+            email,
+          });
+          
+          throw new Error("Please check your email to confirm your account. A new confirmation email has been sent.");
+        }
+        throw error;
+      }
 
       toast({
         title: "Signed in successfully!",
@@ -88,11 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       navigate("/junior-home");
     } catch (error: any) {
-      toast({
-        title: "Error signing in",
-        description: error.message,
-        variant: "destructive",
-      });
+      throw error;
     }
   };
 
