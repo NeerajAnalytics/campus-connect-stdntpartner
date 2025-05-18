@@ -114,28 +114,10 @@ const JuniorReportPage: React.FC = () => {
     try {
       let proofFileUrl = proofs;
 
-      // Upload the proof file if provided
-      if (proofFile) {
-        // Create a unique file path
-        const filePath = `reports/${user.id}/${Date.now()}_${proofFile.name}`;
-        
-        // Upload file to Supabase storage
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('report-proofs')
-          .upload(filePath, proofFile);
-        
-        if (uploadError) throw uploadError;
-        
-        // Get the public URL of the uploaded file
-        const { data: urlData } = supabase.storage
-          .from('report-proofs')
-          .getPublicUrl(filePath);
-        
-        // Update proofFileUrl with the new URL
-        proofFileUrl = urlData?.publicUrl || proofs;
-      }
-
-      // Save report to database
+      // Instead of uploading to storage, we'll send directly to the edge function
+      // and handle the email notification
+      
+      // Save report to database without file upload
       const reportData = {
         user_id: user.id,
         name,
@@ -165,15 +147,18 @@ const JuniorReportPage: React.FC = () => {
           }
         });
 
-        if (emailError) console.error("Email notification error:", emailError);
-      } catch (emailError) {
+        if (emailError) {
+          console.error("Email notification error:", emailError);
+          throw emailError;
+        }
+      } catch (emailError: any) {
         console.error("Failed to send email notification:", emailError);
-        // Continue execution even if email fails
+        throw new Error(`Failed to send email: ${emailError.message}`);
       }
 
       toast({
         title: "Report Submitted",
-        description: "Your report has been submitted successfully. We'll get back to you soon.",
+        description: "Your report has been submitted successfully and sent to stdntpartner@gmail.com.",
       });
 
       // Reset form

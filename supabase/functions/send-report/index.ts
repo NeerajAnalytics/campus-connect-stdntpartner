@@ -59,6 +59,7 @@ serve(async (req) => {
 
     console.log("Email subject:", emailSubject);
     console.log("Email would be sent to:", receiverEmail);
+    console.log("Email content:", emailContent);
 
     return new Response(
       JSON.stringify({ 

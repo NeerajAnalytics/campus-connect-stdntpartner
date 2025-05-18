@@ -31,9 +31,9 @@ const JuniorEditPage: React.FC = () => {
       const { data, error } = await getProfiles()
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error && !error.message.includes('No rows found')) throw error;
       
       if (data) {
         setName(data.name || '');

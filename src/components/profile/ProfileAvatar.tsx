@@ -13,7 +13,7 @@ const ProfileAvatar: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 items-start mb-6">
+    <div className="flex flex-col md:flex-row gap-6 items-center mb-6">
       <div className="w-24 h-24 overflow-hidden flex-shrink-0">
         <Avatar className="w-full h-full">
           <AvatarImage src="" alt="Profile" />
@@ -21,11 +21,6 @@ const ProfileAvatar: React.FC = () => {
             {getInitial()}
           </AvatarFallback>
         </Avatar>
-      </div>
-      <div>
-        <p className="text-gray-700">
-          For the Profile it directly takes from Mail, and the Name is beside it.
-        </p>
       </div>
     </div>
   );

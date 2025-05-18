@@ -49,7 +49,7 @@ const JuniorProfilePage: React.FC = () => {
         
         // Insert the new profile
         const { error: insertError } = await getProfiles()
-          .insert(newProfile);
+          .insert([newProfile]);  // Pass as array to fix TypeScript error
           
         if (insertError) throw insertError;
         
