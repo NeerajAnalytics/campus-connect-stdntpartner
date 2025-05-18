@@ -25,10 +25,16 @@ const ForgotPasswordPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // First, check if the user exists
-      const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email);
+      // Check if the user exists by trying to sign in with OTP
+      // This will not actually sign in the user, but will verify if the email exists
+      const { data: userExists, error: userCheckError } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false, // Don't create a user if they don't exist
+        },
+      });
       
-      if (userError || !user) {
+      if (userCheckError && userCheckError.message.includes("does not exist")) {
         toast({
           title: "User not found",
           description: "No account exists with this email address",
