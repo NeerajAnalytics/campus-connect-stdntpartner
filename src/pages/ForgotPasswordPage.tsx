@@ -25,39 +25,27 @@ const ForgotPasswordPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Check if the user exists by trying to sign in with OTP
-      // This will not actually sign in the user, but will verify if the email exists
-      const { data: userExists, error: userCheckError } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: false, // Don't create a user if they don't exist
-        },
+      // Send password reset email directly
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
       });
       
-      if (userCheckError && userCheckError.message.includes("does not exist")) {
-        toast({
-          title: "User not found",
-          description: "No account exists with this email address",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
+      if (error) throw error;
 
-      // Generate a 6-digit code and store it in sessionStorage
+      // Generate a 6-digit code for verification (for our verification page flow)
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
       sessionStorage.setItem(`vcode_${email}`, verificationCode);
       
       // In a real app, this code would be sent via email
       console.log("Verification code for testing:", verificationCode);
       
+      toast({
+        title: "Reset email sent",
+        description: "Please check your email for instructions to reset your password.",
+      });
+      
       // Navigate to the verification code page
       navigate(`/verification-code?email=${encodeURIComponent(email)}`);
-      
-      toast({
-        title: "Verification code generated",
-        description: "Check console for the verification code (this simulates an email)",
-      });
     } catch (error: any) {
       toast({
         title: "Error",

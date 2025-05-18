@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
@@ -11,10 +11,22 @@ const ResetPasswordPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [resetToken, setResetToken] = useState<string | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
   const email = searchParams.get("email") || "";
+
+  // Check for reset token in URL hash
+  useEffect(() => {
+    // The hash part looks like: #access_token=...&refresh_token=...
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    const accessToken = params.get("access_token");
+    if (accessToken) {
+      setResetToken(accessToken);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,31 +52,36 @@ const ResetPasswordPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      if (!email) {
-        throw new Error("No email provided for password reset");
-      }
-
-      // Send a password reset email
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email);
-      if (resetError) throw resetError;
+      let updateResult;
       
-      // Sign in with OTP to get a session that allows password change
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: false,
-        }
-      });
-
-      if (signInError) throw signInError;
-
-      // Update the user's password - this requires the user to be authenticated
-      // For demo purposes, we'll use adminUpdateUser through client API (normally this would be done in a backend function)
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: password
-      });
-
-      if (updateError) throw updateError;
+      if (resetToken) {
+        // We have a reset token from the URL, use it to update the password
+        const { data, error } = await supabase.auth.updateUser({ 
+          password 
+        });
+        
+        if (error) throw error;
+        updateResult = data;
+      } else {
+        // For our custom verification flow
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        
+        if (error) throw error;
+        
+        // The actual password change will happen when the user clicks the link in the email
+        toast({
+          title: "Password reset link sent",
+          description: "Please check your email to complete the password reset process."
+        });
+        
+        setTimeout(() => {
+          navigate("/junior-login");
+        }, 2000);
+        
+        return;
+      }
 
       toast({
         title: "Password updated",

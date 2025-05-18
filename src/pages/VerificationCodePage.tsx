@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import Footer from "../components/layout/Footer";
@@ -13,9 +13,18 @@ import {
 const VerificationCodePage: React.FC = () => {
   const [verificationCode, setVerificationCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [countdown, setCountdown] = useState(0);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email") || "";
+
+  useEffect(() => {
+    // Decrement the countdown timer every second
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +66,15 @@ const VerificationCodePage: React.FC = () => {
   const handleResendCode = async () => {
     if (!email) return;
     
+    if (countdown > 0) {
+      toast({
+        title: "Please wait",
+        description: `You can request a new code in ${countdown} seconds.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       // Generate a new verification code
       const newVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -64,6 +82,9 @@ const VerificationCodePage: React.FC = () => {
       
       // In a real app, this code would be sent via email
       console.log("New verification code for testing:", newVerificationCode);
+      
+      // Reset the countdown timer to 30 seconds
+      setCountdown(30);
 
       toast({
         title: "Code resent",
@@ -135,9 +156,10 @@ const VerificationCodePage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleResendCode}
-                className="text-sm text-[#5c7bb5] hover:underline"
+                className={`text-sm ${countdown > 0 ? 'text-gray-400' : 'text-[#5c7bb5] hover:underline'}`}
+                disabled={countdown > 0}
               >
-                Didn't receive a code? Resend
+                {countdown > 0 ? `Resend code in ${countdown}s` : "Didn't receive a code? Resend"}
               </button>
               <div>
                 <Link

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, getProfiles } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { Profile } from "@/types/database";
 import ProfileHeader from "@/components/profile/ProfileHeader";
@@ -24,13 +24,14 @@ const JuniorProfilePage: React.FC = () => {
       setLoading(true);
       if (!user) return;
 
-      const { data, error } = await supabase
-        .from('profiles')
+      const { data, error } = await getProfiles()
         .select('*')
         .eq('id', user.id)
         .maybeSingle();
 
-      if (error && !error.message.includes('No rows found')) throw error;
+      if (error && !error.message.includes('No rows found')) {
+        throw error;
+      }
       
       // If profile exists in database, use it
       if (data) {
@@ -47,8 +48,7 @@ const JuniorProfilePage: React.FC = () => {
         };
         
         // Insert the new profile
-        const { error: insertError } = await supabase
-          .from('profiles')
+        const { error: insertError } = await getProfiles()
           .insert(newProfile);
           
         if (insertError) throw insertError;

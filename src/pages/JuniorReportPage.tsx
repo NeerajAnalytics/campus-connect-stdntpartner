@@ -1,27 +1,91 @@
 
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase, getReports } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
-import { Report } from "@/types/database";
 
 const JuniorReportPage: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [issueDescription, setIssueDescription] = useState("");
   const [proofs, setProofs] = useState("");
+  const [proofFile, setProofFile] = useState<File | null>(null);
   const [seniorName, setSeniorName] = useState("");
   const [seniorBranch, setSeniorBranch] = useState("");
   const [seniorPhone, setSeniorPhone] = useState("");
   const [seniorEmail, setSeniorEmail] = useState("");
   const [seniorCollegeId, setSeniorCollegeId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Validation functions
+  const validateNumber = (value: string) => {
+    return /^\d*$/.test(value);
+  };
+
+  // Handle number field changes with validation
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (validateNumber(value)) {
+      setPhone(value);
+    }
+  };
+
+  const handleSeniorPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (validateNumber(value)) {
+      setSeniorPhone(value);
+    }
+  };
+
+  const handleSeniorCollegeIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (validateNumber(value)) {
+      setSeniorCollegeId(value);
+    }
+  };
+
+  // Handle file change
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload a file smaller than 5MB",
+        variant: "destructive",
+      });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+
+    // Check file type (PDF only)
+    if (file.type !== "application/pdf") {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a PDF file",
+        variant: "destructive",
+      });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+
+    setProofFile(file);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +112,29 @@ const JuniorReportPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
+      let proofFileUrl = proofs;
+
+      // Upload the proof file if provided
+      if (proofFile) {
+        // Create a unique file path
+        const filePath = `reports/${user.id}/${Date.now()}_${proofFile.name}`;
+        
+        // Upload file to Supabase storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('report-proofs')
+          .upload(filePath, proofFile);
+        
+        if (uploadError) throw uploadError;
+        
+        // Get the public URL of the uploaded file
+        const { data: urlData } = supabase.storage
+          .from('report-proofs')
+          .getPublicUrl(filePath);
+        
+        // Update proofFileUrl with the new URL
+        proofFileUrl = urlData?.publicUrl || proofs;
+      }
+
       // Save report to database
       const reportData = {
         user_id: user.id,
@@ -55,7 +142,7 @@ const JuniorReportPage: React.FC = () => {
         email,
         phone,
         issue_description: issueDescription,
-        proofs,
+        proofs: proofFileUrl,
         senior_name: seniorName,
         senior_branch: seniorBranch,
         senior_phone: seniorPhone,
@@ -72,7 +159,10 @@ const JuniorReportPage: React.FC = () => {
       // Send email notification using edge function
       try {
         const { error: emailError } = await supabase.functions.invoke('send-report', {
-          body: { reportData }
+          body: { 
+            reportData,
+            receiverEmail: 'stdntpartner@gmail.com'  // Add receiver email
+          }
         });
 
         if (emailError) console.error("Email notification error:", emailError);
@@ -92,14 +182,18 @@ const JuniorReportPage: React.FC = () => {
       setPhone("");
       setIssueDescription("");
       setProofs("");
+      setProofFile(null);
       setSeniorName("");
       setSeniorBranch("");
       setSeniorPhone("");
       setSeniorEmail("");
       setSeniorCollegeId("");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
 
       // Redirect to profile page
-      window.location.href = "/junior-profile";
+      navigate("/junior-profile");
 
     } catch (error: any) {
       toast({
@@ -187,8 +281,10 @@ const JuniorReportPage: React.FC = () => {
                   type="tel" 
                   className="border-gray-300" 
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={handlePhoneChange}
                   disabled={isSubmitting}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                 />
               </div>
             </div>
@@ -208,7 +304,7 @@ const JuniorReportPage: React.FC = () => {
             <div className="flex items-start mb-4">
               <div className="w-40 font-semibold">Proofs (IF ANY)</div>
               <div className="text-xl">:</div>
-              <div className="flex-1 ml-2">
+              <div className="flex-1 ml-2 space-y-2">
                 <Input 
                   type="text" 
                   className="border-gray-300" 
@@ -217,6 +313,17 @@ const JuniorReportPage: React.FC = () => {
                   disabled={isSubmitting}
                   placeholder="Links to screenshots or documents"
                 />
+                <div>
+                  <p className="text-xs text-gray-500 mb-2">Or upload a PDF file (max 5MB)</p>
+                  <Input 
+                    ref={fileInputRef}
+                    type="file" 
+                    accept="application/pdf" 
+                    onChange={handleFileChange}
+                    disabled={isSubmitting}
+                    className="border-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#7d9bd2] file:text-white hover:file:bg-[#6b89c0]"
+                  />
+                </div>
               </div>
             </div>
             
@@ -261,8 +368,10 @@ const JuniorReportPage: React.FC = () => {
                     type="tel" 
                     className="border-gray-300" 
                     value={seniorPhone}
-                    onChange={(e) => setSeniorPhone(e.target.value)}
+                    onChange={handleSeniorPhoneChange}
                     disabled={isSubmitting}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                   />
                 </div>
               </div>
@@ -289,8 +398,10 @@ const JuniorReportPage: React.FC = () => {
                     type="text" 
                     className="border-gray-300" 
                     value={seniorCollegeId}
-                    onChange={(e) => setSeniorCollegeId(e.target.value)}
+                    onChange={handleSeniorCollegeIdChange}
                     disabled={isSubmitting}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                   />
                 </div>
               </div>
@@ -298,7 +409,16 @@ const JuniorReportPage: React.FC = () => {
             
             <hr className="border-gray-300 mb-6" />
             
-            <div className="flex justify-center">
+            <div className="flex justify-center gap-4">
+              <Button
+                type="button"
+                className="bg-gray-400 text-white hover:bg-gray-500 rounded-md px-8"
+                onClick={() => navigate('/junior-profile')}
+                disabled={isSubmitting}
+              >
+                Back
+              </Button>
+
               <Button
                 type="submit"
                 className="bg-[#7d9bd2] text-black hover:bg-[#6b89c0] rounded-md px-8"

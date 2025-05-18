@@ -1,18 +1,24 @@
 
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ProfileAvatar: React.FC = () => {
+  const { user } = useAuth();
+  
+  // Get the first letter of the email to display in avatar
+  const getInitial = () => {
+    if (!user?.email) return "?";
+    return user.email.charAt(0).toUpperCase();
+  };
+
   return (
     <div className="flex flex-col md:flex-row gap-6 items-start mb-6">
-      <div className="w-24 h-24 bg-gray-300 rounded-full overflow-hidden flex-shrink-0">
+      <div className="w-24 h-24 overflow-hidden flex-shrink-0">
         <Avatar className="w-full h-full">
           <AvatarImage src="" alt="Profile" />
-          <AvatarFallback className="bg-gray-300 text-gray-600 text-4xl">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
+          <AvatarFallback className="bg-green-500 text-white text-4xl">
+            {getInitial()}
           </AvatarFallback>
         </Avatar>
       </div>
