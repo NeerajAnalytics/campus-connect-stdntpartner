@@ -9,7 +9,6 @@ import {
   InputOTPGroup, 
   InputOTPSlot 
 } from "@/components/ui/input-otp";
-import { supabase } from "@/integrations/supabase/client";
 
 const VerificationCodePage: React.FC = () => {
   const [verificationCode, setVerificationCode] = useState("");
@@ -59,13 +58,6 @@ const VerificationCodePage: React.FC = () => {
     if (!email) return;
     
     try {
-      // Initiate the password reset process again
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
-      if (error) throw error;
-
       // Generate a new verification code
       const newVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
       sessionStorage.setItem(`vcode_${email}`, newVerificationCode);
@@ -75,7 +67,7 @@ const VerificationCodePage: React.FC = () => {
 
       toast({
         title: "Code resent",
-        description: "A new verification code has been sent to your email",
+        description: "A new verification code has been generated (check console)",
       });
     } catch (error: any) {
       toast({

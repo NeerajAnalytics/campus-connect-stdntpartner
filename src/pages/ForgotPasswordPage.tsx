@@ -44,14 +44,6 @@ const ForgotPasswordPage: React.FC = () => {
         return;
       }
 
-      // Initiate the password reset process
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
-      if (error) throw error;
-      
-      // For the purpose of the app, we'll simulate a verification code
       // Generate a 6-digit code and store it in sessionStorage
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
       sessionStorage.setItem(`vcode_${email}`, verificationCode);
@@ -63,13 +55,13 @@ const ForgotPasswordPage: React.FC = () => {
       navigate(`/verification-code?email=${encodeURIComponent(email)}`);
       
       toast({
-        title: "Verification code sent",
-        description: "Check your email for the verification code",
+        title: "Verification code generated",
+        description: "Check console for the verification code (this simulates an email)",
       });
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to send reset email",
+        description: error.message || "Failed to process request",
         variant: "destructive",
       });
     } finally {

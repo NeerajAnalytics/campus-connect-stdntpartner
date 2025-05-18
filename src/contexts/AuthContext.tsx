@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', userId)
         .maybeSingle();
         
-      if (fetchError) throw fetchError;
+      if (fetchError && !fetchError.message.includes('No rows found')) throw fetchError;
       
       // If no profile exists, create one
       if (!existingProfile) {

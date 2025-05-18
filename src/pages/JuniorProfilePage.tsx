@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,12 +27,34 @@ const JuniorProfilePage: React.FC = () => {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error && !error.message.includes('No rows found')) throw error;
       
-      setProfile(data as Profile);
+      // If profile exists in database, use it
+      if (data) {
+        setProfile(data as Profile);
+      } else {
+        // Otherwise create a new profile using user metadata
+        const userData = user.user_metadata;
+        const newProfile: Partial<Profile> = {
+          id: user.id,
+          name: userData?.name || null,
+          gender: userData?.gender || null,
+        };
+        
+        // Insert the new profile
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert(newProfile);
+          
+        if (insertError) throw insertError;
+        
+        // Set the new profile for immediate display
+        setProfile(newProfile as Profile);
+      }
     } catch (error: any) {
+      console.error("Profile fetch error:", error);
       toast({
         title: "Error fetching profile",
         description: error.message,
