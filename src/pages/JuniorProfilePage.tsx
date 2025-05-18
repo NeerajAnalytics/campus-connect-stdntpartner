@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,7 +38,9 @@ const JuniorProfilePage: React.FC = () => {
       } else {
         // Otherwise create a new profile using user metadata
         const userData = user.user_metadata;
-        const newProfile: Partial<Profile> = {
+        
+        // Make sure to explicitly set id as it's required for the insert
+        const newProfile = {
           id: user.id,
           name: userData?.name || null,
           gender: userData?.gender || null,
