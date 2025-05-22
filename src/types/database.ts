@@ -8,6 +8,15 @@ export interface Profile {
   updated_at: string;
 }
 
+export interface SeniorProfile {
+  id: string;
+  name: string | null;
+  gender: string | null;
+  college_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Report {
   id: string;
   user_id: string;
@@ -27,5 +36,6 @@ export interface Report {
 // Add table type definitions for type-safe database access
 export interface Tables {
   profiles: Profile;
+  senior_profiles: SeniorProfile;
   reports: Report;
 }

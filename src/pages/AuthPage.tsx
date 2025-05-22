@@ -18,7 +18,7 @@ const AuthPage: React.FC = () => {
           <Link to="/junior-login" className="bg-[#1a4e8a] text-white rounded-full text-lg font-medium hover:bg-[#153e75] transition-colors mx-0 py-[11px] px-[76px] my-[43px]">
             Junior
           </Link>
-          <Link to="/register" className="bg-[#1a4e8a] text-white py-2.5 rounded-full text-lg font-medium hover:bg-[#153e75] transition-colors px-[76px]">
+          <Link to="/senior-login" className="bg-[#1a4e8a] text-white py-2.5 rounded-full text-lg font-medium hover:bg-[#153e75] transition-colors px-[76px]">
             Senior
           </Link>
         </div>

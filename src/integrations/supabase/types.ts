@@ -81,6 +81,33 @@ export type Database = {
         }
         Relationships: []
       }
+      senior_profiles: {
+        Row: {
+          college_id: string | null
+          created_at: string | null
+          gender: string | null
+          id: string
+          name: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          college_id?: string | null
+          created_at?: string | null
+          gender?: string | null
+          id: string
+          name?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          college_id?: string | null
+          created_at?: string | null
+          gender?: string | null
+          id?: string
+          name?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

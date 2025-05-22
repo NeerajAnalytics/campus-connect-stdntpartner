@@ -18,6 +18,11 @@ import JuniorTermsPage from "./pages/JuniorTermsPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import VerificationCodePage from "./pages/VerificationCodePage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import SeniorLoginPage from "./pages/SeniorLoginPage";
+import SeniorSignupPage from "./pages/SeniorSignupPage";
+import SeniorForgotPasswordPage from "./pages/SeniorForgotPasswordPage";
+import SeniorVerificationCodePage from "./pages/SeniorVerificationCodePage";
+import SeniorResetPasswordPage from "./pages/SeniorResetPasswordPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 // This is a placeholder component for routes that are not yet implemented
@@ -46,6 +51,8 @@ function App() {
           <Route path="/" element={<Index />} />
           <Route path="/initial" element={<InitialPage />} />
           <Route path="/auth" element={<AuthPage />} />
+          
+          {/* Junior routes */}
           <Route path="/junior-login" element={<JuniorLoginPage />} />
           <Route path="/junior-signup" element={<JuniorSignupPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -93,6 +100,16 @@ function App() {
           />
           <Route path="/junior-faq" element={<JuniorFAQPage />} />
           <Route path="/junior-terms" element={<JuniorTermsPage />} />
+          
+          {/* Senior routes */}
+          <Route path="/senior-login" element={<SeniorLoginPage />} />
+          <Route path="/senior-signup" element={<SeniorSignupPage />} />
+          <Route path="/senior-forgot-password" element={<SeniorForgotPasswordPage />} />
+          <Route path="/senior-verification-code" element={<SeniorVerificationCodePage />} />
+          <Route path="/senior-reset-password" element={<SeniorResetPasswordPage />} />
+          <Route path="/senior-home" element={<UnderConstruction />} />
+          
+          {/* Legacy routes */}
           <Route path="/login" element={<UnderConstruction />} />
           <Route path="/register" element={<UnderConstruction />} />
           <Route path="/connect" element={<AuthPage />} />
@@ -100,6 +117,7 @@ function App() {
           <Route path="/profile" element={<JuniorProfilePage />} />
           <Route path="/faq" element={<UnderConstruction />} />
           <Route path="/terms" element={<UnderConstruction />} />
+          
           <Route
             path="*"
             element={
