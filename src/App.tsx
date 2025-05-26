@@ -25,6 +25,7 @@ import SeniorVerificationCodePage from "./pages/SeniorVerificationCodePage";
 import SeniorResetPasswordPage from "./pages/SeniorResetPasswordPage";
 import SeniorHomePage from "./pages/SeniorHomePage";
 import SeniorProfilePage from "./pages/SeniorProfilePage";
+import SeniorFAQPage from "./pages/SeniorFAQPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 // This is a placeholder component for routes that are not yet implemented
