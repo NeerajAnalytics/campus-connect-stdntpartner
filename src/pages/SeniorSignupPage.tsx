@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Input } from "../components/ui/input";
@@ -127,18 +128,11 @@ const SeniorSignupPage: React.FC = () => {
               <label htmlFor="gender" className="block font-medium">
                 Gender
               </label>
-              <Select
-                id="gender"
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                className="w-full border border-gray-300 rounded h-12 px-3"
-                disabled={isLoading}
-              >
-                <SelectTrigger>
+              <Select value={gender} onValueChange={setGender} disabled={isLoading}>
+                <SelectTrigger className="w-full border border-gray-300 rounded h-12">
                   <SelectValue placeholder="Select Gender" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Select Gender</SelectItem>
                   <SelectItem value="Male">Male</SelectItem>
                   <SelectItem value="Female">Female</SelectItem>
                   <SelectItem value="Other">Other</SelectItem>
