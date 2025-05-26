@@ -1,8 +1,8 @@
-
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import Footer from "../components/layout/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/use-toast";
@@ -16,25 +16,24 @@ const SeniorSignupPage: React.FC = () => {
   const [gender, setGender] = useState("");
   const [collegeId, setCollegeId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const { signUp } = useAuth();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validation
-    if (!email || !name || !password || !confirmPassword || !gender || !collegeId) {
+    if (password !== confirmPassword) {
       toast({
-        title: "Error",
-        description: "Please fill in all fields",
+        title: "Passwords don't match",
+        description: "Please make sure both passwords are the same.",
         variant: "destructive",
       });
       return;
     }
 
-    if (password !== confirmPassword) {
+    if (!gender) {
       toast({
-        title: "Error",
-        description: "Passwords do not match",
+        title: "Please select gender",
+        description: "Gender is required to complete signup.",
         variant: "destructive",
       });
       return;
@@ -43,52 +42,9 @@ const SeniorSignupPage: React.FC = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-            gender,
-            college_id: collegeId,
-            type: "senior", // Indicate this is a senior profile
-          },
-          emailRedirectTo: `${window.location.origin}/senior-login`,
-        }
-      });
-
-      if (error) throw error;
-
-      // Create senior profile
-      if (data.user) {
-        try {
-          const { error: profileError } = await getSeniorProfiles().insert({
-            id: data.user.id,
-            name,
-            gender,
-            college_id: collegeId,
-          });
-
-          if (profileError) throw profileError;
-        } catch (profileError: any) {
-          console.error("Error creating senior profile:", profileError);
-          // Continue with signup even if profile creation fails
-          // The profile will be created when they log in
-        }
-      }
-
-      toast({
-        title: "Sign up successful!",
-        description: "Please check your email to confirm your account before logging in.",
-      });
-
-      navigate("/senior-login");
+      await signUp(email, password, name, gender, collegeId);
     } catch (error: any) {
-      toast({
-        title: "Error signing up",
-        description: error.message,
-        variant: "destructive",
-      });
+      // Error handling is done in the signUp function
     } finally {
       setIsLoading(false);
     }
@@ -171,18 +127,23 @@ const SeniorSignupPage: React.FC = () => {
               <label htmlFor="gender" className="block font-medium">
                 Gender
               </label>
-              <select
+              <Select
                 id="gender"
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
                 className="w-full border border-gray-300 rounded h-12 px-3"
                 disabled={isLoading}
               >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select Gender</SelectItem>
+                  <SelectItem value="Male">Male</SelectItem>
+                  <SelectItem value="Female">Female</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

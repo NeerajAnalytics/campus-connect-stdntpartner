@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Input } from "../components/ui/input";
@@ -19,10 +18,8 @@ const SeniorLoginPage: React.FC = () => {
     setIsLoading(true);
     
     try {
-      await signIn(email, password);
+      await signIn(email, password, 'senior');
       // The navigation happens in the signIn function after successful login
-      // We'll redirect to the senior home page once it's created
-      navigate("/under-construction");
     } catch (error: any) {
       toast({
         title: "Login failed",

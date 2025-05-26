@@ -23,6 +23,8 @@ import SeniorSignupPage from "./pages/SeniorSignupPage";
 import SeniorForgotPasswordPage from "./pages/SeniorForgotPasswordPage";
 import SeniorVerificationCodePage from "./pages/SeniorVerificationCodePage";
 import SeniorResetPasswordPage from "./pages/SeniorResetPasswordPage";
+import SeniorHomePage from "./pages/SeniorHomePage";
+import SeniorProfilePage from "./pages/SeniorProfilePage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 // This is a placeholder component for routes that are not yet implemented
@@ -107,7 +109,22 @@ function App() {
           <Route path="/senior-forgot-password" element={<SeniorForgotPasswordPage />} />
           <Route path="/senior-verification-code" element={<SeniorVerificationCodePage />} />
           <Route path="/senior-reset-password" element={<SeniorResetPasswordPage />} />
-          <Route path="/senior-home" element={<UnderConstruction />} />
+          <Route 
+            path="/senior-home" 
+            element={
+              <ProtectedRoute>
+                <SeniorHomePage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/senior-profile" 
+            element={
+              <ProtectedRoute>
+                <SeniorProfilePage />
+              </ProtectedRoute>
+            } 
+          />
           
           {/* Legacy routes */}
           <Route path="/login" element={<UnderConstruction />} />

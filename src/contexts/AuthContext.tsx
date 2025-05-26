@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase, getProfiles } from "@/integrations/supabase/client";
@@ -10,8 +9,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, name: string, gender: string) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string, gender: string, college_id?: string) => Promise<void>;
+  signIn: (email: string, password: string, userType?: 'junior' | 'senior') => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (data: {name?: string; gender?: string; password?: string}) => Promise<void>;
 }
@@ -79,16 +78,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signUp = async (email: string, password: string, name: string, gender: string) => {
+  const signUp = async (email: string, password: string, name: string, gender: string, college_id?: string) => {
     try {
+      const userData: any = {
+        name,
+        gender,
+      };
+      
+      // Add college_id only if provided (for senior signup)
+      if (college_id) {
+        userData.college_id = college_id;
+      }
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: {
-            name,
-            gender,
-          },
+          data: userData,
           emailRedirectTo: `${window.location.origin}/junior-login`,
         }
       });
@@ -100,7 +106,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Please check your email to confirm your account before logging in.",
       });
 
-      navigate("/junior-login");
+      // Navigate based on whether college_id was provided
+      if (college_id) {
+        navigate("/senior-login");
+      } else {
+        navigate("/junior-login");
+      }
     } catch (error: any) {
       toast({
         title: "Error signing up",
@@ -110,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, userType?: 'junior' | 'senior') => {
     try {
       const { error, data } = await supabase.auth.signInWithPassword({
         email,
@@ -135,8 +146,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         title: "Signed in successfully!",
       });
 
-      // Successfully signed in, now navigate to the home page
-      navigate("/junior-home");
+      // Navigate based on user type or check user metadata
+      const userData = data.user?.user_metadata;
+      const hasCollegeId = userData?.college_id;
+      
+      if (userType === 'senior' || hasCollegeId) {
+        navigate("/senior-home");
+      } else {
+        navigate("/junior-home");
+      }
     } catch (error: any) {
       throw error;
     }
@@ -145,7 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
-      navigate("/junior-login");
+      navigate("/");
     } catch (error: any) {
       toast({
         title: "Error signing out",
