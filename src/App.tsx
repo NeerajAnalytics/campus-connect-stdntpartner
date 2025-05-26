@@ -125,6 +125,7 @@ function App() {
               </ProtectedRoute>
             } 
           />
+          <Route path="/senior-faq" element={<SeniorFAQPage />} />
           
           {/* Legacy routes */}
           <Route path="/login" element={<UnderConstruction />} />
