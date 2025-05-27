@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -26,6 +25,8 @@ import SeniorResetPasswordPage from "./pages/SeniorResetPasswordPage";
 import SeniorHomePage from "./pages/SeniorHomePage";
 import SeniorProfilePage from "./pages/SeniorProfilePage";
 import SeniorFAQPage from "./pages/SeniorFAQPage";
+import SeniorEditPage from "./pages/SeniorEditPage";
+import SeniorTermsPage from "./pages/SeniorTermsPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 // This is a placeholder component for routes that are not yet implemented
@@ -126,7 +127,16 @@ function App() {
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/senior-edit" 
+            element={
+              <ProtectedRoute>
+                <SeniorEditPage />
+              </ProtectedRoute>
+            } 
+          />
           <Route path="/senior-faq" element={<SeniorFAQPage />} />
+          <Route path="/senior-terms" element={<SeniorTermsPage />} />
           
           {/* Legacy routes */}
           <Route path="/login" element={<UnderConstruction />} />

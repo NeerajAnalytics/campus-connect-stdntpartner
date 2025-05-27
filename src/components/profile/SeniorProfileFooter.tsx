@@ -17,7 +17,7 @@ const SeniorProfileFooter: React.FC = () => {
             <Link to="/senior-faq" className="text-gray-700 hover:text-gray-900">
               FAQ's
             </Link>
-            <Link to="/terms" className="text-gray-700 hover:text-gray-900">
+            <Link to="/senior-terms" className="text-gray-700 hover:text-gray-900">
               Terms & Conditions
             </Link>
           </div>

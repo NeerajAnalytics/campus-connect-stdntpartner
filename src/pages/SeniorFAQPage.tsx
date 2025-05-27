@@ -66,6 +66,34 @@ const SeniorFAQPage: React.FC = () => {
                 <p>You will not be initiating the connection process, juniors will be selecting the seniors they wish to connect.</p>
               </AccordionContent>
             </AccordionItem>
+
+            <AccordionItem value="item-2" className="border-none">
+              <AccordionTrigger className="bg-[#7d9bd2] text-black p-4 rounded-md hover:no-underline hover:bg-[#6b89c0] data-[state=open]:bg-[#6b89c0] transition-all">
+                Through what means juniors will contact me?
+              </AccordionTrigger>
+              <AccordionContent className="bg-white p-6 mt-1 rounded-md text-center animate-accordion-down shadow-sm">
+                <p>Juniors UI have an option called "Connect with Seniors". Your contact details are mention over there, so they will initiate the process.</p>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-3" className="border-none">
+              <AccordionTrigger className="bg-[#7d9bd2] text-black p-4 rounded-md hover:no-underline hover:bg-[#6b89c0] data-[state=open]:bg-[#6b89c0] transition-all">
+                What do Juniors expect from me?
+              </AccordionTrigger>
+              <AccordionContent className="bg-white p-6 mt-1 rounded-md text-center animate-accordion-down shadow-sm">
+                <p>Mostly Juniors will be asking your about the Admission process and the hostel booking process and related stuff. Rarely they may ask you for any additional help.</p>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-4" className="border-none">
+              <AccordionTrigger className="bg-[#7d9bd2] text-black p-4 rounded-md hover:no-underline hover:bg-[#6b89c0] data-[state=open]:bg-[#6b89c0] transition-all">
+                To what level I need to help Juniors?
+              </AccordionTrigger>
+              <AccordionContent className="bg-white p-6 mt-1 rounded-md text-center animate-accordion-down shadow-sm">
+                <p>It completely depends on you to help, if you are are not aware of something that your junior is asking just connect them with your friends who can help them.</p>
+                <p className="mt-4">We suggest you to help juniors in your scope and do act Smart if something is out of your scope.</p>
+              </AccordionContent>
+            </AccordionItem>
           </Accordion>
         </div>
       </main>
@@ -81,10 +109,10 @@ const SeniorFAQPage: React.FC = () => {
               <Link to="/senior-home" className="text-gray-700 hover:text-gray-900">
                 Home
               </Link>
-              <Link to="/faq" className="text-gray-700 hover:text-gray-900">
+              <Link to="/senior-faq" className="text-gray-700 hover:text-gray-900">
                 FAQ's
               </Link>
-              <Link to="/terms" className="text-gray-700 hover:text-gray-900">
+              <Link to="/senior-terms" className="text-gray-700 hover:text-gray-900">
                 Terms & Conditions
               </Link>
             </div>
