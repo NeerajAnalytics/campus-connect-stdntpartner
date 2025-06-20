@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
-import { supabase, getProfiles } from "@/integrations/supabase/client";
+import { supabase, getProfiles, getSeniorProfiles } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { Profile } from "@/types/database";
@@ -9,7 +9,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, name: string, gender: string, college_id?: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string, gender: string, collegeId?: string, rollNo?: string, phone?: string, region?: string) => Promise<void>;
   signIn: (email: string, password: string, userType?: 'junior' | 'senior') => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (data: {name?: string; gender?: string; password?: string}) => Promise<void>;
@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (newSession?.user && event === 'SIGNED_IN') {
           setTimeout(() => {
             // Create a profile for the user if it doesn't exist
-            createProfileIfNotExists(newSession.user.id);
+            createProfileIfNotExists(newSession.user.id, newSession.user.user_metadata);
           }, 0);
         }
       }
@@ -52,9 +52,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
   
   // Helper function to create a profile if it doesn't exist
-  const createProfileIfNotExists = async (userId: string) => {
+  const createProfileIfNotExists = async (userId: string, userMetadata: any) => {
     try {
-      // Check if profile exists
+      // Check if regular profile exists
       const { data: existingProfile, error: fetchError } = await getProfiles()
         .select()
         .eq('id', userId)
@@ -62,32 +62,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
       if (fetchError && !fetchError.message.includes('No rows found')) throw fetchError;
       
-      // If no profile exists, create one
-      if (!existingProfile) {
-        const userData = user?.user_metadata;
-        const { error: insertError } = await getProfiles().insert({
-          id: userId,
-          name: userData?.name || null,
-          gender: userData?.gender || null,
-        });
+      // Check if this is a senior (has college_id in metadata)
+      const isSenior = userMetadata?.college_id;
+      
+      if (isSenior) {
+        // Check if senior profile exists
+        const { data: existingSeniorProfile, error: seniorFetchError } = await getSeniorProfiles()
+          .select()
+          .eq('id', userId)
+          .maybeSingle();
+          
+        if (seniorFetchError && !seniorFetchError.message.includes('No rows found')) throw seniorFetchError;
         
-        if (insertError) throw insertError;
+        // If no senior profile exists, create one
+        if (!existingSeniorProfile) {
+          const { error: insertError } = await getSeniorProfiles().insert({
+            id: userId,
+            name: userMetadata?.name || null,
+            gender: userMetadata?.gender || null,
+            college_id: userMetadata?.college_id || null,
+            roll_no: userMetadata?.roll_no || null,
+            phone: userMetadata?.phone || null,
+            email: userMetadata?.email || null,
+            region: userMetadata?.region || null,
+          });
+          
+          if (insertError) throw insertError;
+        }
+      } else {
+        // If no regular profile exists, create one
+        if (!existingProfile) {
+          const { error: insertError } = await getProfiles().insert({
+            id: userId,
+            name: userMetadata?.name || null,
+            gender: userMetadata?.gender || null,
+          });
+          
+          if (insertError) throw insertError;
+        }
       }
     } catch (error) {
       console.error("Error checking/creating profile:", error);
     }
   };
 
-  const signUp = async (email: string, password: string, name: string, gender: string, college_id?: string) => {
+  const signUp = async (email: string, password: string, name: string, gender: string, collegeId?: string, rollNo?: string, phone?: string, region?: string) => {
     try {
       const userData: any = {
         name,
         gender,
       };
       
-      // Add college_id only if provided (for senior signup)
-      if (college_id) {
-        userData.college_id = college_id;
+      // Add senior-specific data if provided
+      if (collegeId) {
+        userData.college_id = collegeId;
+        userData.roll_no = rollNo;
+        userData.phone = phone;
+        userData.email = email;
+        userData.region = region;
       }
 
       const { error } = await supabase.auth.signUp({
@@ -107,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       // Navigate based on whether college_id was provided
-      if (college_id) {
+      if (collegeId) {
         navigate("/senior-login");
       } else {
         navigate("/junior-login");
