@@ -1,19 +1,12 @@
+
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
-import { supabase, getProfiles, getSeniorProfiles } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
-import { Profile } from "@/types/database";
-
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  signUp: (email: string, password: string, name: string, gender: string, collegeId?: string, rollNo?: string, phone?: string, region?: string) => Promise<void>;
-  signIn: (email: string, password: string, userType?: 'junior' | 'senior') => Promise<void>;
-  signOut: () => Promise<void>;
-  updateProfile: (data: {name?: string; gender?: string; password?: string}) => Promise<void>;
-}
+import { AuthContextType } from "@/types/auth";
+import { signUpUser, signInUser, signOutUser, updateUserPassword } from "@/services/authService";
+import { createProfileIfNotExists, updateUserProfile } from "@/services/profileService";
+import { useAuthNavigation } from "@/hooks/useAuthNavigation";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -21,7 +14,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const { navigateAfterSignUp, navigateAfterSignIn, navigateAfterSignOut } = useAuthNavigation();
 
   useEffect(() => {
     // Set up auth state listener first
@@ -50,100 +43,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, []);
-  
-  // Helper function to create a profile if it doesn't exist
-  const createProfileIfNotExists = async (userId: string, userMetadata: any) => {
-    try {
-      // Check if regular profile exists
-      const { data: existingProfile, error: fetchError } = await getProfiles()
-        .select()
-        .eq('id', userId)
-        .maybeSingle();
-        
-      if (fetchError && !fetchError.message.includes('No rows found')) throw fetchError;
-      
-      // Check if this is a senior (has college_id in metadata)
-      const isSenior = userMetadata?.college_id;
-      
-      if (isSenior) {
-        // Check if senior profile exists
-        const { data: existingSeniorProfile, error: seniorFetchError } = await getSeniorProfiles()
-          .select()
-          .eq('id', userId)
-          .maybeSingle();
-          
-        if (seniorFetchError && !seniorFetchError.message.includes('No rows found')) throw seniorFetchError;
-        
-        // If no senior profile exists, create one
-        if (!existingSeniorProfile) {
-          const { error: insertError } = await getSeniorProfiles().insert({
-            id: userId,
-            name: userMetadata?.name || null,
-            gender: userMetadata?.gender || null,
-            college_id: userMetadata?.college_id || null,
-            roll_no: userMetadata?.roll_no || null,
-            phone: userMetadata?.phone || null,
-            email: userMetadata?.email || null,
-            region: userMetadata?.region || null,
-          });
-          
-          if (insertError) throw insertError;
-        }
-      } else {
-        // If no regular profile exists, create one
-        if (!existingProfile) {
-          const { error: insertError } = await getProfiles().insert({
-            id: userId,
-            name: userMetadata?.name || null,
-            gender: userMetadata?.gender || null,
-          });
-          
-          if (insertError) throw insertError;
-        }
-      }
-    } catch (error) {
-      console.error("Error checking/creating profile:", error);
-    }
-  };
 
   const signUp = async (email: string, password: string, name: string, gender: string, collegeId?: string, rollNo?: string, phone?: string, region?: string) => {
     try {
-      const userData: any = {
-        name,
-        gender,
-      };
-      
-      // Add senior-specific data if provided
-      if (collegeId) {
-        userData.college_id = collegeId;
-        userData.roll_no = rollNo;
-        userData.phone = phone;
-        userData.email = email;
-        userData.region = region;
-      }
-
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: userData,
-          emailRedirectTo: `${window.location.origin}/junior-login`,
-        }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Sign up successful!",
-        description: "Please check your email to confirm your account before logging in.",
-      });
-
-      // Navigate based on whether college_id was provided
-      if (collegeId) {
-        navigate("/senior-login");
-      } else {
-        navigate("/junior-login");
-      }
+      const result = await signUpUser(email, password, name, gender, collegeId, rollNo, phone, region);
+      navigateAfterSignUp(result.isSenior);
     } catch (error: any) {
       toast({
         title: "Error signing up",
@@ -155,38 +59,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string, userType?: 'junior' | 'senior') => {
     try {
-      const { error, data } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        // If the error mentions email not confirmed, provide specific guidance
-        if (error.message.includes("Email not confirmed")) {
-          // Send another confirmation email
-          await supabase.auth.resend({
-            type: 'signup',
-            email,
-          });
-          
-          throw new Error("Please check your email to confirm your account. A new confirmation email has been sent.");
-        }
-        throw error;
-      }
-
-      toast({
-        title: "Signed in successfully!",
-      });
-
-      // Navigate based on user type or check user metadata
+      const data = await signInUser(email, password);
       const userData = data.user?.user_metadata;
-      const hasCollegeId = userData?.college_id;
-      
-      if (userType === 'senior' || hasCollegeId) {
-        navigate("/senior-home");
-      } else {
-        navigate("/junior-home");
-      }
+      navigateAfterSignIn(userType, userData);
     } catch (error: any) {
       throw error;
     }
@@ -194,8 +69,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
-      navigate("/");
+      await signOutUser();
+      navigateAfterSignOut();
     } catch (error: any) {
       toast({
         title: "Error signing out",
@@ -208,28 +83,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateProfile = async (data: {name?: string; gender?: string; password?: string}) => {
     try {
       if (data.password) {
-        // Update password
-        const { error: passwordError } = await supabase.auth.updateUser({
-          password: data.password,
-        });
-
-        if (passwordError) throw passwordError;
+        await updateUserPassword(data.password);
       }
 
       if (data.name || data.gender) {
-        // Only update profile if we have name or gender changes
-        const updateData: Partial<Profile> = {};
-        if (data.name) updateData.name = data.name;
-        if (data.gender) updateData.gender = data.gender;
-
         if (!user) throw new Error("User not authenticated");
-
-        // Use the type-safe helper function
-        const { error: profileError } = await getProfiles()
-          .update(updateData)
-          .eq('id', user.id);
-
-        if (profileError) throw profileError;
+        await updateUserProfile(user.id, { name: data.name, gender: data.gender });
       }
 
       toast({
