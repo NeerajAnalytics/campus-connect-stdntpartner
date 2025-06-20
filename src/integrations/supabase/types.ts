@@ -85,25 +85,37 @@ export type Database = {
         Row: {
           college_id: string | null
           created_at: string | null
+          email: string | null
           gender: string | null
           id: string
           name: string | null
+          phone: string | null
+          region: string | null
+          roll_no: string | null
           updated_at: string | null
         }
         Insert: {
           college_id?: string | null
           created_at?: string | null
+          email?: string | null
           gender?: string | null
           id: string
           name?: string | null
+          phone?: string | null
+          region?: string | null
+          roll_no?: string | null
           updated_at?: string | null
         }
         Update: {
           college_id?: string | null
           created_at?: string | null
+          email?: string | null
           gender?: string | null
           id?: string
           name?: string | null
+          phone?: string | null
+          region?: string | null
+          roll_no?: string | null
           updated_at?: string | null
         }
         Relationships: []

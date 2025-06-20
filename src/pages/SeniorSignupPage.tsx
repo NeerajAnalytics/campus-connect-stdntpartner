@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import Footer from "../components/layout/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/use-toast";
-import { supabase, getSeniorProfiles } from "@/integrations/supabase/client";
+import { getSeniorProfiles } from "@/integrations/supabase/client";
 
 const SeniorSignupPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -16,6 +16,9 @@ const SeniorSignupPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [gender, setGender] = useState("");
   const [collegeId, setCollegeId] = useState("");
+  const [rollNo, setRollNo] = useState("");
+  const [phone, setPhone] = useState("");
+  const [region, setRegion] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
 
@@ -43,7 +46,7 @@ const SeniorSignupPage: React.FC = () => {
     setIsLoading(true);
     
     try {
-      await signUp(email, password, name, gender, collegeId);
+      await signUp(email, password, name, gender, collegeId, rollNo, phone, region);
     } catch (error: any) {
       // Error handling is done in the signUp function
     } finally {
@@ -61,7 +64,7 @@ const SeniorSignupPage: React.FC = () => {
           <Link to="/" className="text-[#5c7bb5] text-2xl font-semibold">
             CampusConnect
           </Link>
-          <div className="w-[50px]"></div> {/* Empty div for alignment */}
+          <div className="w-[50px]"></div>
         </div>
       </header>
 
@@ -79,6 +82,7 @@ const SeniorSignupPage: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full border border-gray-300 rounded h-12"
                 disabled={isLoading}
+                required
               />
             </div>
 
@@ -93,6 +97,7 @@ const SeniorSignupPage: React.FC = () => {
                 onChange={(e) => setName(e.target.value)}
                 className="w-full border border-gray-300 rounded h-12"
                 disabled={isLoading}
+                required
               />
             </div>
 
@@ -107,6 +112,7 @@ const SeniorSignupPage: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full border border-gray-300 rounded h-12"
                 disabled={isLoading}
+                required
               />
             </div>
 
@@ -121,6 +127,7 @@ const SeniorSignupPage: React.FC = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full border border-gray-300 rounded h-12"
                 disabled={isLoading}
+                required
               />
             </div>
 
@@ -149,6 +156,49 @@ const SeniorSignupPage: React.FC = () => {
                 type="text"
                 value={collegeId}
                 onChange={(e) => setCollegeId(e.target.value)}
+                className="w-full border border-gray-300 rounded h-12"
+                disabled={isLoading}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="rollNo" className="block font-medium">
+                Roll Number
+              </label>
+              <Input
+                id="rollNo"
+                type="text"
+                value={rollNo}
+                onChange={(e) => setRollNo(e.target.value)}
+                className="w-full border border-gray-300 rounded h-12"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="phone" className="block font-medium">
+                Phone Number
+              </label>
+              <Input
+                id="phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full border border-gray-300 rounded h-12"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="region" className="block font-medium">
+                Region
+              </label>
+              <Input
+                id="region"
+                type="text"
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
                 className="w-full border border-gray-300 rounded h-12"
                 disabled={isLoading}
               />

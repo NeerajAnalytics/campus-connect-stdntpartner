@@ -48,7 +48,7 @@ const SeniorEditPage: React.FC = () => {
     }
   };
 
-  const handleSave = async (name: string, gender: string, collegeId: string, password: string) => {
+  const handleSave = async (name: string, gender: string, collegeId: string, rollNo: string, phone: string, email: string, region: string, password: string) => {
     try {
       if (!user) throw new Error("User not authenticated");
 
@@ -57,6 +57,10 @@ const SeniorEditPage: React.FC = () => {
       if (name) updateData.name = name;
       if (gender) updateData.gender = gender;
       if (collegeId) updateData.college_id = collegeId;
+      if (rollNo) updateData.roll_no = rollNo;
+      if (phone) updateData.phone = phone;
+      if (email) updateData.email = email;
+      if (region) updateData.region = region;
 
       if (Object.keys(updateData).length > 0) {
         const { error: profileError } = await getSeniorProfiles()
@@ -85,13 +89,17 @@ const SeniorEditPage: React.FC = () => {
     }
   };
 
-  // Get user metadata which contains name, gender, and college_id from sign up
+  // Get user metadata which contains data from sign up
   const userMetadata = user?.user_metadata || {};
   
   // Use profile data if available, fallback to user metadata
   const initialName = profile?.name || userMetadata.name || '';
   const initialGender = profile?.gender || userMetadata.gender || '';
   const initialCollegeId = profile?.college_id || userMetadata.college_id || '';
+  const initialRollNo = profile?.roll_no || userMetadata.roll_no || '';
+  const initialPhone = profile?.phone || userMetadata.phone || '';
+  const initialEmail = profile?.email || user?.email || '';
+  const initialRegion = profile?.region || userMetadata.region || '';
 
   return (
     <div className="min-h-screen flex flex-col bg-[#edf1f8] font-['Poppins']">
@@ -112,6 +120,10 @@ const SeniorEditPage: React.FC = () => {
               initialName={initialName}
               initialGender={initialGender}
               initialCollegeId={initialCollegeId}
+              initialRollNo={initialRollNo}
+              initialPhone={initialPhone}
+              initialEmail={initialEmail}
+              initialRegion={initialRegion}
               isLoading={loading}
               onSave={handleSave}
             />

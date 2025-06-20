@@ -13,6 +13,10 @@ export interface SeniorProfile {
   name: string | null;
   gender: string | null;
   college_id: string | null;
+  roll_no: string | null;
+  phone: string | null;
+  email: string | null;
+  region: string | null;
   created_at: string;
   updated_at: string;
 }

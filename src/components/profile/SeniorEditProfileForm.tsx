@@ -8,20 +8,32 @@ interface SeniorEditProfileFormProps {
   initialName: string;
   initialGender: string;
   initialCollegeId: string;
+  initialRollNo: string;
+  initialPhone: string;
+  initialEmail: string;
+  initialRegion: string;
   isLoading: boolean;
-  onSave: (name: string, gender: string, collegeId: string, password: string) => Promise<void>;
+  onSave: (name: string, gender: string, collegeId: string, rollNo: string, phone: string, email: string, region: string, password: string) => Promise<void>;
 }
 
 const SeniorEditProfileForm: React.FC<SeniorEditProfileFormProps> = ({
   initialName,
   initialGender,
   initialCollegeId,
+  initialRollNo,
+  initialPhone,
+  initialEmail,
+  initialRegion,
   isLoading,
   onSave
 }) => {
   const [name, setName] = useState(initialName);
   const [gender, setGender] = useState(initialGender);
   const [collegeId, setCollegeId] = useState(initialCollegeId);
+  const [rollNo, setRollNo] = useState(initialRollNo);
+  const [phone, setPhone] = useState(initialPhone);
+  const [email, setEmail] = useState(initialEmail);
+  const [region, setRegion] = useState(initialRegion);
   const [password, setPassword] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   
@@ -29,7 +41,7 @@ const SeniorEditProfileForm: React.FC<SeniorEditProfileFormProps> = ({
     setIsSaving(true);
     
     try {
-      await onSave(name, gender, collegeId, password);
+      await onSave(name, gender, collegeId, rollNo, phone, email, region, password);
     } catch (error: any) {
       console.error("Error updating profile:", error);
       toast({
@@ -98,6 +110,54 @@ const SeniorEditProfileForm: React.FC<SeniorEditProfileFormProps> = ({
           placeholder="Enter College ID" 
           value={collegeId} 
           onChange={(e) => setCollegeId(e.target.value)}
+          className="border-gray-300"
+          disabled={isSaving}
+        />
+      </div>
+
+      <div>
+        <h3 className="font-semibold mb-1">Roll Number</h3>
+        <Input 
+          type="text" 
+          placeholder="Enter Roll Number" 
+          value={rollNo} 
+          onChange={(e) => setRollNo(e.target.value)}
+          className="border-gray-300"
+          disabled={isSaving}
+        />
+      </div>
+
+      <div>
+        <h3 className="font-semibold mb-1">Phone Number</h3>
+        <Input 
+          type="tel" 
+          placeholder="Enter Phone Number" 
+          value={phone} 
+          onChange={(e) => setPhone(e.target.value)}
+          className="border-gray-300"
+          disabled={isSaving}
+        />
+      </div>
+
+      <div>
+        <h3 className="font-semibold mb-1">Email</h3>
+        <Input 
+          type="email" 
+          placeholder="Enter Email" 
+          value={email} 
+          onChange={(e) => setEmail(e.target.value)}
+          className="border-gray-300"
+          disabled={isSaving}
+        />
+      </div>
+
+      <div>
+        <h3 className="font-semibold mb-1">Region</h3>
+        <Input 
+          type="text" 
+          placeholder="Enter Region" 
+          value={region} 
+          onChange={(e) => setRegion(e.target.value)}
           className="border-gray-300"
           disabled={isSaving}
         />
