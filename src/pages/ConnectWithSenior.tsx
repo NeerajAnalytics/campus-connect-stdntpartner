@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Mail } from "lucide-react";
@@ -38,12 +39,27 @@ const ConnectWithSenior: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-[#edf1f8] font-['Poppins']">
-        <header className="border-b border-gray-300">
-          <div className="bg-white py-4">
-            <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
-              <Link to="/junior-home" className="text-[#5c7bb5] text-xl font-semibold">
+        <header className="bg-[#edf1f8] border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <Link to="/junior-home" className="text-[#5c7bb5] text-2xl font-semibold">
                 CampusConnect
               </Link>
+              
+              <div className="flex items-center gap-8">
+                <Link to="/junior-home" className="text-gray-700 hover:text-gray-900">
+                  Home
+                </Link>
+                <Link to="/connect-with-senior" className="text-gray-700 hover:text-gray-900">
+                  Connect With Senior
+                </Link>
+                <Link to="/accommodation" className="text-gray-700 hover:text-gray-900">
+                  Accommodation
+                </Link>
+                <Link to="/junior-profile" className="text-gray-700 hover:text-gray-900">
+                  Profile
+                </Link>
+              </div>
             </div>
           </div>
         </header>
@@ -56,26 +72,27 @@ const ConnectWithSenior: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#edf1f8] font-['Poppins']">
-      <header className="border-b border-gray-300">
-        <div className="bg-white py-4">
-          <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
-            <Link to="/junior-home" className="text-[#5c7bb5] text-xl font-semibold">
+      <header className="bg-[#edf1f8] border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link to="/junior-home" className="text-[#5c7bb5] text-2xl font-semibold">
               CampusConnect
             </Link>
-            <nav className="flex items-center gap-8">
+            
+            <div className="flex items-center gap-8">
               <Link to="/junior-home" className="text-gray-700 hover:text-gray-900">
                 Home
+              </Link>
+              <Link to="/connect-with-senior" className="text-gray-700 hover:text-gray-900">
+                Connect With Senior
+              </Link>
+              <Link to="/accommodation" className="text-gray-700 hover:text-gray-900">
+                Accommodation
               </Link>
               <Link to="/junior-profile" className="text-gray-700 hover:text-gray-900">
                 Profile
               </Link>
-              <Link to="/connect-with-senior" className="text-gray-700 hover:text-gray-900">
-                Connect with Senior
-              </Link>
-              <Link to="/junior-report" className="text-gray-700 hover:text-gray-900">
-                Report
-              </Link>
-            </nav>
+            </div>
           </div>
         </div>
       </header>
@@ -145,7 +162,31 @@ const ConnectWithSenior: React.FC = () => {
         </div>
       </main>
 
-      <footer className="border-t border-gray-300 mt-auto">
+      {/* Footer */}
+      <footer className="bg-[#edf1f8] border-t border-gray-300">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 py-6 text-center md:text-left">
+            <div>
+              <h3 className="font-semibold text-gray-800">How Can we Help ?</h3>
+              <p className="text-gray-700">Contact us any time</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-800">Call Us</h3>
+              <p className="text-gray-700">
+                +91 9704927248
+                <br />
+                +91 850093952
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-800">Send Us a Message</h3>
+              <p className="text-gray-700">stdntpartner@gmail.com</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-800">Follow Us</h3>
+            </div>
+          </div>
+        </div>
         <div className="bg-white py-4">
           <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <Link to="/junior-home" className="text-[#5c7bb5] text-xl font-semibold">
