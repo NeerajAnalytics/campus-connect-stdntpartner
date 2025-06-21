@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 
@@ -8,7 +9,7 @@ const JuniorHomePage: React.FC = () => {
       <header className="bg-[#edf1f8] border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="text-[#5c7bb5] text-2xl font-semibold">
+            <Link to="/junior-home" className="text-[#5c7bb5] text-2xl font-semibold">
               CampusConnect
             </Link>
             

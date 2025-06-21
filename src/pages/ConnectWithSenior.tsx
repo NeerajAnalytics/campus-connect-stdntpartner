@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Mail } from "lucide-react";
@@ -83,15 +82,7 @@ const ConnectWithSenior: React.FC = () => {
 
       <main className="flex-grow py-6 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-center mb-8">
-            <img 
-              src="/lovable-uploads/def5486f-4474-4ec4-b0e0-98c951a89062.png" 
-              alt="CampusConnect Logo" 
-              className="w-24 h-24"
-            />
-          </div>
-
-          <h1 className="text-2xl font-bold text-center mb-8 text-gray-800">
+          <h1 className="text-3xl font-bold text-center mb-12 text-gray-800">
             Connect with Seniors
           </h1>
 

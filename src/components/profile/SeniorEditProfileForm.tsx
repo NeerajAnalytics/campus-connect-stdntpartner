@@ -7,19 +7,17 @@ import { toast } from "@/components/ui/use-toast";
 interface SeniorEditProfileFormProps {
   initialName: string;
   initialGender: string;
-  initialCollegeId: string;
   initialRollNo: string;
   initialPhone: string;
   initialEmail: string;
   initialRegion: string;
   isLoading: boolean;
-  onSave: (name: string, gender: string, collegeId: string, rollNo: string, phone: string, email: string, region: string, password: string) => Promise<void>;
+  onSave: (name: string, gender: string, rollNo: string, phone: string, email: string, region: string, password: string) => Promise<void>;
 }
 
 const SeniorEditProfileForm: React.FC<SeniorEditProfileFormProps> = ({
   initialName,
   initialGender,
-  initialCollegeId,
   initialRollNo,
   initialPhone,
   initialEmail,
@@ -29,7 +27,6 @@ const SeniorEditProfileForm: React.FC<SeniorEditProfileFormProps> = ({
 }) => {
   const [name, setName] = useState(initialName);
   const [gender, setGender] = useState(initialGender);
-  const [collegeId, setCollegeId] = useState(initialCollegeId);
   const [rollNo, setRollNo] = useState(initialRollNo);
   const [phone, setPhone] = useState(initialPhone);
   const [email, setEmail] = useState(initialEmail);
@@ -41,7 +38,7 @@ const SeniorEditProfileForm: React.FC<SeniorEditProfileFormProps> = ({
     setIsSaving(true);
     
     try {
-      await onSave(name, gender, collegeId, rollNo, phone, email, region, password);
+      await onSave(name, gender, rollNo, phone, email, region, password);
     } catch (error: any) {
       console.error("Error updating profile:", error);
       toast({
@@ -64,6 +61,10 @@ const SeniorEditProfileForm: React.FC<SeniorEditProfileFormProps> = ({
 
   return (
     <div className="space-y-6 mb-6">
+      <div className="text-center mb-8">
+        <h1 className="text-2xl font-bold text-gray-800">Edit Profile</h1>
+      </div>
+
       <div>
         <h3 className="font-semibold mb-1">Name</h3>
         <Input 
@@ -104,18 +105,6 @@ const SeniorEditProfileForm: React.FC<SeniorEditProfileFormProps> = ({
       </div>
 
       <div>
-        <h3 className="font-semibold mb-1">College ID</h3>
-        <Input 
-          type="text" 
-          placeholder="Enter College ID" 
-          value={collegeId} 
-          onChange={(e) => setCollegeId(e.target.value)}
-          className="border-gray-300"
-          disabled={isSaving}
-        />
-      </div>
-
-      <div>
         <h3 className="font-semibold mb-1">Roll Number</h3>
         <Input 
           type="text" 
@@ -152,7 +141,7 @@ const SeniorEditProfileForm: React.FC<SeniorEditProfileFormProps> = ({
       </div>
 
       <div>
-        <h3 className="font-semibold mb-1">Region</h3>
+        <h3 className="font-semibold mb-1">Region (State)</h3>
         <Input 
           type="text" 
           placeholder="Enter Region" 

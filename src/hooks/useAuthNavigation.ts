@@ -13,7 +13,7 @@ export const useAuthNavigation = () => {
   };
 
   const navigateAfterSignIn = (userType?: 'junior' | 'senior', userData?: any) => {
-    const hasCollegeId = userData?.college_id;
+    const hasCollegeId = userData?.college_id || userData?.roll_no;
     
     if (userType === 'senior' || hasCollegeId) {
       navigate("/senior-home");

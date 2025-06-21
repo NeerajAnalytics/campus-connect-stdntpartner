@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Input } from "../components/ui/input";
@@ -7,7 +6,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import Footer from "../components/layout/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/use-toast";
-import { getSeniorProfiles } from "@/integrations/supabase/client";
 
 const SeniorSignupPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -15,7 +13,6 @@ const SeniorSignupPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [gender, setGender] = useState("");
-  const [collegeId, setCollegeId] = useState("");
   const [rollNo, setRollNo] = useState("");
   const [phone, setPhone] = useState("");
   const [region, setRegion] = useState("");
@@ -46,7 +43,8 @@ const SeniorSignupPage: React.FC = () => {
     setIsLoading(true);
     
     try {
-      await signUp(email, password, name, gender, collegeId, rollNo, phone, region);
+      // Use rollNo as collegeId since they represent the same thing
+      await signUp(email, password, name, gender, rollNo, rollNo, phone, region);
     } catch (error: any) {
       // Error handling is done in the signUp function
     } finally {
@@ -148,21 +146,6 @@ const SeniorSignupPage: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="collegeId" className="block font-medium">
-                College-ID
-              </label>
-              <Input
-                id="collegeId"
-                type="text"
-                value={collegeId}
-                onChange={(e) => setCollegeId(e.target.value)}
-                className="w-full border border-gray-300 rounded h-12"
-                disabled={isLoading}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
               <label htmlFor="rollNo" className="block font-medium">
                 Roll Number
               </label>
@@ -173,6 +156,7 @@ const SeniorSignupPage: React.FC = () => {
                 onChange={(e) => setRollNo(e.target.value)}
                 className="w-full border border-gray-300 rounded h-12"
                 disabled={isLoading}
+                required
               />
             </div>
 
@@ -192,7 +176,7 @@ const SeniorSignupPage: React.FC = () => {
 
             <div className="space-y-2">
               <label htmlFor="region" className="block font-medium">
-                Region
+                Region (State)
               </label>
               <Input
                 id="region"
