@@ -17,13 +17,15 @@ const ConnectWithSenior: React.FC = () => {
   const fetchSeniors = async () => {
     try {
       setLoading(true);
+      console.log("Fetching seniors from database...");
       const { data, error } = await getSeniorProfiles()
-        .select('*')
-        .not('name', 'is', null)
-        .not('email', 'is', null);
+        .select('*');
 
       if (error) throw error;
+      
+      console.log("Raw senior data from database:", data);
       setSeniors(data || []);
+      console.log("Number of seniors found:", data?.length || 0);
     } catch (error: any) {
       console.error("Error fetching seniors:", error);
       toast({
@@ -126,7 +128,7 @@ const ConnectWithSenior: React.FC = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="font-medium text-gray-600">Roll No:</span>
-                      <span className="text-gray-800">{senior.roll_no || 'Not provided'}</span>
+                      <span className="text-gray-800">{senior.roll_no || senior.college_id || 'Not provided'}</span>
                     </div>
                     
                     <div className="flex justify-between">
@@ -136,7 +138,9 @@ const ConnectWithSenior: React.FC = () => {
                     
                     <div className="flex justify-between">
                       <span className="font-medium text-gray-600">Email:</span>
-                      <span className="text-gray-800 text-sm break-all">{senior.email || 'Not provided'}</span>
+                      <span className="text-gray-800 text-sm break-all">
+                        {senior.email || senior.college_id || 'Not provided'}
+                      </span>
                     </div>
                     
                     <div className="flex justify-between">
@@ -145,10 +149,10 @@ const ConnectWithSenior: React.FC = () => {
                     </div>
                   </div>
                   
-                  {senior.email && (
+                  {(senior.email || senior.college_id) && (
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <a 
-                        href={`mailto:${senior.email}`}
+                        href={`mailto:${senior.email || senior.college_id}`}
                         className="w-full bg-[#7d9bd2] text-black py-2 px-4 rounded-md hover:bg-[#6b89c0] transition-colors inline-block text-center"
                       >
                         Contact Senior

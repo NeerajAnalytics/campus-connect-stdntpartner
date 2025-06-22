@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
@@ -12,18 +11,23 @@ export const signUpUser = async (
   phone?: string,
   region?: string
 ) => {
+  console.log("Signing up user with data:", {
+    email, name, gender, collegeId, rollNo, phone, region
+  });
+  
   const userData: any = {
     name,
     gender,
+    email, // Make sure email is included in metadata
   };
   
   // Add senior-specific data if provided
-  if (collegeId) {
-    userData.college_id = collegeId;
-    userData.roll_no = rollNo;
+  if (collegeId || rollNo) {
+    userData.college_id = collegeId || rollNo; // Use rollNo as college_id if collegeId is not provided
+    userData.roll_no = rollNo || collegeId; // Use collegeId as roll_no if rollNo is not provided
     userData.phone = phone;
-    userData.email = email;
     userData.region = region;
+    console.log("Senior signup data:", userData);
   }
 
   const { error } = await supabase.auth.signUp({
@@ -35,14 +39,17 @@ export const signUpUser = async (
     }
   });
 
-  if (error) throw error;
+  if (error) {
+    console.error("Signup error:", error);
+    throw error;
+  }
 
   toast({
     title: "Sign up successful!",
     description: "Please check your email to confirm your account before logging in.",
   });
 
-  return { success: true, isSenior: !!collegeId };
+  return { success: true, isSenior: !!(collegeId || rollNo) };
 };
 
 export const signInUser = async (email: string, password: string) => {

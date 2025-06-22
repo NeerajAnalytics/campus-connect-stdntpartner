@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { AuthContextType } from "@/types/auth";
 import { signUpUser, signInUser, signOutUser, updateUserPassword } from "@/services/authService";
-import { createProfileIfNotExists, updateUserProfile } from "@/services/profileService";
+import { createProfileIfNotExists, updateUserProfile, updateSeniorProfile } from "@/services/profileService";
 import { useAuthNavigation } from "@/hooks/useAuthNavigation";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,6 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
+        console.log("Auth state change:", event, newSession?.user?.id);
         // Only update with synchronous state updates here
         setSession(newSession);
         setUser(newSession?.user ?? null);
@@ -27,6 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Use setTimeout to avoid deadlock with other Supabase calls
         if (newSession?.user && event === 'SIGNED_IN') {
           setTimeout(() => {
+            console.log("Creating profile for signed in user:", newSession.user.id);
             // Create a profile for the user if it doesn't exist
             createProfileIfNotExists(newSession.user.id, newSession.user.user_metadata);
           }, 0);
@@ -80,15 +82,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const updateProfile = async (data: {name?: string; gender?: string; password?: string}) => {
+  const updateProfile = async (data: {
+    name?: string; 
+    gender?: string; 
+    password?: string;
+    roll_no?: string;
+    phone?: string;
+    email?: string;
+    region?: string;
+  }) => {
     try {
       if (data.password) {
         await updateUserPassword(data.password);
       }
 
-      if (data.name || data.gender) {
-        if (!user) throw new Error("User not authenticated");
-        await updateUserProfile(user.id, { name: data.name, gender: data.gender });
+      if (!user) throw new Error("User not authenticated");
+
+      // Check if this is a senior user by checking if they have senior-specific fields
+      const isSenior = user.user_metadata?.college_id || user.user_metadata?.roll_no || 
+                      data.roll_no || data.phone || data.region;
+
+      if (isSenior) {
+        // Update senior profile
+        const seniorUpdateData: any = {};
+        if (data.name !== undefined) seniorUpdateData.name = data.name;
+        if (data.gender !== undefined) seniorUpdateData.gender = data.gender;
+        if (data.roll_no !== undefined) seniorUpdateData.roll_no = data.roll_no;
+        if (data.phone !== undefined) seniorUpdateData.phone = data.phone;
+        if (data.email !== undefined) seniorUpdateData.email = data.email;
+        if (data.region !== undefined) seniorUpdateData.region = data.region;
+
+        await updateSeniorProfile(user.id, seniorUpdateData);
+      } else {
+        // Update regular profile
+        if (data.name || data.gender) {
+          await updateUserProfile(user.id, { name: data.name, gender: data.gender });
+        }
       }
 
       toast({

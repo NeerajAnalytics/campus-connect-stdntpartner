@@ -4,6 +4,9 @@ import { Profile } from "@/types/database";
 
 export const createProfileIfNotExists = async (userId: string, userMetadata: any) => {
   try {
+    console.log("Creating profile for user:", userId);
+    console.log("User metadata:", userMetadata);
+    
     // Check if regular profile exists
     const { data: existingProfile, error: fetchError } = await getProfiles()
       .select()
@@ -13,9 +16,10 @@ export const createProfileIfNotExists = async (userId: string, userMetadata: any
     if (fetchError && !fetchError.message.includes('No rows found')) throw fetchError;
     
     // Check if this is a senior (has college_id in metadata)
-    const isSenior = userMetadata?.college_id;
+    const isSenior = userMetadata?.college_id || userMetadata?.roll_no;
     
     if (isSenior) {
+      console.log("Creating senior profile...");
       // Check if senior profile exists
       const { data: existingSeniorProfile, error: seniorFetchError } = await getSeniorProfiles()
         .select()
@@ -26,29 +30,52 @@ export const createProfileIfNotExists = async (userId: string, userMetadata: any
       
       // If no senior profile exists, create one
       if (!existingSeniorProfile) {
-        const { error: insertError } = await getSeniorProfiles().insert({
+        const seniorData = {
           id: userId,
           name: userMetadata?.name || null,
           gender: userMetadata?.gender || null,
           college_id: userMetadata?.college_id || null,
-          roll_no: userMetadata?.roll_no || null,
+          roll_no: userMetadata?.roll_no || userMetadata?.college_id || null, // Use college_id as fallback for roll_no
           phone: userMetadata?.phone || null,
           email: userMetadata?.email || null,
           region: userMetadata?.region || null,
-        });
+        };
         
-        if (insertError) throw insertError;
+        console.log("Inserting senior profile data:", seniorData);
+        
+        const { error: insertError } = await getSeniorProfiles().insert(seniorData);
+        
+        if (insertError) {
+          console.error("Error inserting senior profile:", insertError);
+          throw insertError;
+        }
+        
+        console.log("Senior profile created successfully");
+      } else {
+        console.log("Senior profile already exists");
       }
     } else {
+      console.log("Creating regular profile...");
       // If no regular profile exists, create one
       if (!existingProfile) {
-        const { error: insertError } = await getProfiles().insert({
+        const profileData = {
           id: userId,
           name: userMetadata?.name || null,
           gender: userMetadata?.gender || null,
-        });
+        };
         
-        if (insertError) throw insertError;
+        console.log("Inserting profile data:", profileData);
+        
+        const { error: insertError } = await getProfiles().insert(profileData);
+        
+        if (insertError) {
+          console.error("Error inserting profile:", insertError);
+          throw insertError;
+        }
+        
+        console.log("Profile created successfully");
+      } else {
+        console.log("Profile already exists");
       }
     }
   } catch (error) {
@@ -66,4 +93,35 @@ export const updateUserProfile = async (userId: string, data: {name?: string; ge
     .eq('id', userId);
 
   if (error) throw error;
+};
+
+export const updateSeniorProfile = async (userId: string, data: {
+  name?: string; 
+  gender?: string; 
+  roll_no?: string; 
+  phone?: string; 
+  email?: string; 
+  region?: string;
+}) => {
+  console.log("Updating senior profile for user:", userId);
+  console.log("Update data:", data);
+  
+  const updateData: any = {};
+  if (data.name !== undefined) updateData.name = data.name;
+  if (data.gender !== undefined) updateData.gender = data.gender;
+  if (data.roll_no !== undefined) updateData.roll_no = data.roll_no;
+  if (data.phone !== undefined) updateData.phone = data.phone;
+  if (data.email !== undefined) updateData.email = data.email;
+  if (data.region !== undefined) updateData.region = data.region;
+
+  const { error } = await getSeniorProfiles()
+    .update(updateData)
+    .eq('id', userId);
+
+  if (error) {
+    console.error("Error updating senior profile:", error);
+    throw error;
+  }
+  
+  console.log("Senior profile updated successfully");
 };
