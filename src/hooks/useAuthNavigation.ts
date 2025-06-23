@@ -5,6 +5,7 @@ export const useAuthNavigation = () => {
   const navigate = useNavigate();
 
   const navigateAfterSignUp = (isSenior: boolean) => {
+    // After signup, redirect to login page based on user type
     if (isSenior) {
       navigate("/senior-login");
     } else {
@@ -13,9 +14,12 @@ export const useAuthNavigation = () => {
   };
 
   const navigateAfterSignIn = (userType?: 'junior' | 'senior', userData?: any) => {
-    const hasCollegeId = userData?.college_id || userData?.roll_no;
+    // Determine if user is senior based on metadata or userType
+    const isSenior = userType === 'senior' || 
+                    userData?.college_id || 
+                    userData?.roll_no;
     
-    if (userType === 'senior' || hasCollegeId) {
+    if (isSenior) {
       navigate("/senior-home");
     } else {
       navigate("/junior-home");

@@ -1,60 +1,56 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
+import { useUserNavigation } from "@/hooks/useUserNavigation";
 
 const Footer: React.FC = () => {
+  const { navigateToHome, isLoggedIn, isSenior } = useUserNavigation();
+
+  const handleCampusConnectClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigateToHome();
+  };
+
+  const getHomeLink = () => {
+    if (!isLoggedIn) return "/";
+    return isSenior ? "/senior-home" : "/junior-home";
+  };
+
+  const getFAQLink = () => {
+    if (!isLoggedIn) return "/junior-faq";
+    return isSenior ? "/senior-faq" : "/junior-faq";
+  };
+
+  const getTermsLink = () => {
+    if (!isLoggedIn) return "/junior-terms";
+    return isSenior ? "/senior-terms" : "/junior-terms";
+  };
+
   return (
-    <footer className="font-['Poppins']">
-      <div className="bg-[#7d9bd2] py-8">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div>
-            <h3 className="text-black text-lg font-medium mb-2">How Can we Help ?</h3>
-            <p className="text-black">Contact us any time</p>
-          </div>
-          
-          <div>
-            <h3 className="text-black text-lg font-medium mb-2">Call Us</h3>
-            <p className="text-black">
-              +91 9704927248
-              <br />
-              +91 850093952
-            </p>
-          </div>
-          
-          <div>
-            <h3 className="text-black text-lg font-medium mb-2">Send Us a Message</h3>
-            <p className="text-black">stdntpartner@gmail.com</p>
-          </div>
-          
-          <div>
-            <h3 className="text-black text-lg font-medium">Follow Us</h3>
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-white py-6 border-t">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <Link to="/" className="text-[#5c7bb5] text-2xl font-semibold">
-              CampusConnect
+    <footer className="border-t border-gray-300 mt-auto">
+      <div className="bg-white py-4">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+          <button 
+            onClick={handleCampusConnectClick}
+            className="text-[#5c7bb5] text-xl font-semibold hover:text-[#4a6ba3] transition-colors"
+          >
+            CampusConnect
+          </button>
+          <div className="flex items-center gap-8 text-sm">
+            <Link to={getHomeLink()} className="text-gray-700 hover:text-gray-900">
+              Home
             </Link>
-            <div className="flex items-center gap-8">
-              <Link to="/" className="text-gray-700 hover:text-gray-900">
-                Home
-              </Link>
-              <Link to="/faq" className="text-gray-700 hover:text-gray-900">
-                FAQ's
-              </Link>
-              <Link to="/terms" className="text-gray-700 hover:text-gray-900">
-                Terms & Conditions
-              </Link>
-            </div>
+            <Link to={getFAQLink()} className="text-gray-700 hover:text-gray-900">
+              FAQ's
+            </Link>
+            <Link to={getTermsLink()} className="text-gray-700 hover:text-gray-900">
+              Terms & Conditions
+            </Link>
           </div>
         </div>
       </div>
-      
-      <div className="bg-[#7d9bd2] py-4 text-center">
-        <p className="text-black">Copyright © Student Partner</p>
+      <div className="bg-[#7d9bd2] py-2 text-center text-black text-sm">
+        <p>Copyright © Student Partner</p>
       </div>
     </footer>
   );

@@ -39,9 +39,14 @@ export type Database = {
           email: string
           id: string
           issue_description: string
+          junior_branch: string | null
+          junior_email: string | null
+          junior_name: string | null
+          junior_phone: string | null
           name: string
           phone: string | null
           proofs: string | null
+          roll_no: string | null
           senior_branch: string | null
           senior_college_id: string | null
           senior_email: string | null
@@ -54,9 +59,14 @@ export type Database = {
           email: string
           id?: string
           issue_description: string
+          junior_branch?: string | null
+          junior_email?: string | null
+          junior_name?: string | null
+          junior_phone?: string | null
           name: string
           phone?: string | null
           proofs?: string | null
+          roll_no?: string | null
           senior_branch?: string | null
           senior_college_id?: string | null
           senior_email?: string | null
@@ -69,9 +79,14 @@ export type Database = {
           email?: string
           id?: string
           issue_description?: string
+          junior_branch?: string | null
+          junior_email?: string | null
+          junior_name?: string | null
+          junior_phone?: string | null
           name?: string
           phone?: string | null
           proofs?: string | null
+          roll_no?: string | null
           senior_branch?: string | null
           senior_college_id?: string | null
           senior_email?: string | null

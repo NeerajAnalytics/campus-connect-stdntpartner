@@ -7,6 +7,7 @@ import { Textarea } from "../components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase, getReports } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
+import Footer from "../components/layout/Footer";
 
 const JuniorReportPage: React.FC = () => {
   const { user } = useAuth();
@@ -114,10 +115,26 @@ const JuniorReportPage: React.FC = () => {
     try {
       let proofFileUrl = proofs;
 
-      // Instead of uploading to storage, we'll send directly to the edge function
-      // and handle the email notification
+      // Upload file if provided
+      if (proofFile) {
+        const fileName = `${Date.now()}_${proofFile.name}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('reports')
+          .upload(fileName, proofFile);
+
+        if (uploadError) {
+          console.error("File upload error:", uploadError);
+          // Continue without file if upload fails
+          proofFileUrl = proofs || "File upload failed";
+        } else {
+          const { data: { publicUrl } } = supabase.storage
+            .from('reports')
+            .getPublicUrl(fileName);
+          proofFileUrl = publicUrl;
+        }
+      }
       
-      // Save report to database without file upload
+      // Save report to database
       const reportData = {
         user_id: user.id,
         name,
@@ -132,28 +149,46 @@ const JuniorReportPage: React.FC = () => {
         senior_college_id: seniorCollegeId
       };
 
-      // Use type-safe helper function
-      const { error: saveError } = await getReports()
-        .insert(reportData);
+      console.log("Submitting report data:", reportData);
 
-      if (saveError) throw saveError;
+      const { error: saveError } = await getReports().insert(reportData);
+
+      if (saveError) {
+        console.error("Database save error:", saveError);
+        throw saveError;
+      }
+
+      console.log("Report saved to database successfully");
 
       // Send email notification using edge function
       try {
-        const { error: emailError } = await supabase.functions.invoke('send-report', {
+        console.log("Sending email notification...");
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-report', {
           body: { 
-            reportData,
-            receiverEmail: 'stdntpartner@gmail.com'  // Add receiver email
+            reportData: {
+              ...reportData,
+              proofFileUrl
+            },
+            receiverEmail: 'stdntpartner@gmail.com'
           }
         });
 
+        console.log("Email function response:", emailData);
+
         if (emailError) {
           console.error("Email notification error:", emailError);
-          throw emailError;
+          throw new Error(`Email sending failed: ${emailError.message}`);
         }
+
+        console.log("Email sent successfully");
       } catch (emailError: any) {
         console.error("Failed to send email notification:", emailError);
-        throw new Error(`Failed to send email: ${emailError.message}`);
+        // Don't throw here - the report is still saved
+        toast({
+          title: "Report Submitted",
+          description: "Your report has been submitted successfully. However, there was an issue sending the email notification.",
+          variant: "destructive",
+        });
       }
 
       toast({
@@ -181,9 +216,10 @@ const JuniorReportPage: React.FC = () => {
       navigate("/junior-profile");
 
     } catch (error: any) {
+      console.error("Report submission error:", error);
       toast({
         title: "Error submitting report",
-        description: error.message,
+        description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {
@@ -197,7 +233,7 @@ const JuniorReportPage: React.FC = () => {
       <header className="bg-[#edf1f8] border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="text-[#5c7bb5] text-2xl font-semibold">
+            <Link to="/junior-home" className="text-[#5c7bb5] text-2xl font-semibold">
               CampusConnect
             </Link>
             
@@ -416,30 +452,7 @@ const JuniorReportPage: React.FC = () => {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-300 mt-auto">
-        <div className="bg-white py-4">
-          <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
-            <Link to="/" className="text-[#5c7bb5] text-xl font-semibold">
-              CampusConnect
-            </Link>
-            <div className="flex items-center gap-8 text-sm">
-              <Link to="/junior-home" className="text-gray-700 hover:text-gray-900">
-                Home
-              </Link>
-              <Link to="/junior-faq" className="text-gray-700 hover:text-gray-900">
-                FAQ's
-              </Link>
-              <Link to="/terms" className="text-gray-700 hover:text-gray-900">
-                Terms & Conditions
-              </Link>
-            </div>
-          </div>
-        </div>
-        <div className="bg-[#7d9bd2] py-2 text-center text-black text-sm">
-          <p>Copyright © Student Partner</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

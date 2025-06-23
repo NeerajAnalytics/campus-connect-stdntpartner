@@ -34,6 +34,11 @@ export interface Report {
   senior_phone?: string | null;
   senior_email?: string | null;
   senior_college_id?: string | null;
+  junior_name?: string | null;
+  junior_branch?: string | null;
+  junior_phone?: string | null;
+  junior_email?: string | null;
+  roll_no?: string | null;
   created_at: string;
 }
 
