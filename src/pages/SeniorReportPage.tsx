@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
@@ -160,14 +159,14 @@ const SeniorReportPage: React.FC = () => {
 
       console.log("Senior report saved to database successfully");
 
-      // Send email notification using edge function
+      // Send email using new edge function
       try {
         console.log("Sending senior report email notification...");
-        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-senior-report', {
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-report-email', {
           body: { 
             reportData: {
               ...reportData,
-              proofFileUrl
+              reportType: 'senior'
             },
             receiverEmail: 'stdntpartner@gmail.com'
           }
@@ -183,12 +182,12 @@ const SeniorReportPage: React.FC = () => {
         console.log("Senior report email sent successfully");
       } catch (emailError: any) {
         console.error("Failed to send senior report email notification:", emailError);
-        // Don't throw here - the report is still saved
         toast({
           title: "Report Submitted",
           description: "Your report has been submitted successfully. However, there was an issue sending the email notification.",
           variant: "destructive",
         });
+        return;
       }
 
       toast({

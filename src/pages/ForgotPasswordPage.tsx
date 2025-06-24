@@ -25,31 +25,37 @@ const ForgotPasswordPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Send password reset email directly
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      
-      if (error) throw error;
-
-      // Generate a 6-digit code for verification (for our verification page flow)
+      // Generate a 6-digit code for verification
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
       sessionStorage.setItem(`vcode_${email}`, verificationCode);
       
-      // In a real app, this code would be sent via email
-      console.log("Verification code for testing:", verificationCode);
+      // Send the code via email using our edge function
+      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-password-reset', {
+        body: { 
+          email,
+          code: verificationCode
+        }
+      });
+
+      if (emailError) {
+        console.error("Email sending error:", emailError);
+        throw new Error(`Failed to send email: ${emailError.message}`);
+      }
+
+      console.log("Password reset email sent successfully:", emailData);
       
       toast({
-        title: "Reset email sent",
-        description: "Please check your email for instructions to reset your password.",
+        title: "Verification code sent",
+        description: "Please check your email for the 6-digit verification code.",
       });
       
       // Navigate to the verification code page
       navigate(`/verification-code?email=${encodeURIComponent(email)}`);
     } catch (error: any) {
+      console.error("Password reset error:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to process request",
+        description: error.message || "Failed to send verification code",
         variant: "destructive",
       });
     } finally {

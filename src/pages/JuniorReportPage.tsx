@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
@@ -100,7 +99,6 @@ const JuniorReportPage: React.FC = () => {
       return;
     }
 
-    // Basic validation
     if (!name || !email || !issueDescription) {
       toast({
         title: "Error",
@@ -115,7 +113,6 @@ const JuniorReportPage: React.FC = () => {
     try {
       let proofFileUrl = proofs;
 
-      // Upload file if provided
       if (proofFile) {
         const fileName = `${Date.now()}_${proofFile.name}`;
         const { data: uploadData, error: uploadError } = await supabase.storage
@@ -124,7 +121,6 @@ const JuniorReportPage: React.FC = () => {
 
         if (uploadError) {
           console.error("File upload error:", uploadError);
-          // Continue without file if upload fails
           proofFileUrl = proofs || "File upload failed";
         } else {
           const { data: { publicUrl } } = supabase.storage
@@ -134,7 +130,6 @@ const JuniorReportPage: React.FC = () => {
         }
       }
       
-      // Save report to database
       const reportData = {
         user_id: user.id,
         name,
@@ -160,14 +155,14 @@ const JuniorReportPage: React.FC = () => {
 
       console.log("Report saved to database successfully");
 
-      // Send email notification using edge function
+      // Send email using new edge function
       try {
         console.log("Sending email notification...");
-        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-report', {
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-report-email', {
           body: { 
             reportData: {
               ...reportData,
-              proofFileUrl
+              reportType: 'junior'
             },
             receiverEmail: 'stdntpartner@gmail.com'
           }
@@ -183,12 +178,12 @@ const JuniorReportPage: React.FC = () => {
         console.log("Email sent successfully");
       } catch (emailError: any) {
         console.error("Failed to send email notification:", emailError);
-        // Don't throw here - the report is still saved
         toast({
           title: "Report Submitted",
           description: "Your report has been submitted successfully. However, there was an issue sending the email notification.",
           variant: "destructive",
         });
+        return;
       }
 
       toast({
@@ -212,7 +207,6 @@ const JuniorReportPage: React.FC = () => {
         fileInputRef.current.value = "";
       }
 
-      // Redirect to profile page
       navigate("/junior-profile");
 
     } catch (error: any) {
@@ -225,6 +219,67 @@ const JuniorReportPage: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Validation functions
+  const validateNumber = (value: string) => {
+    return /^\d*$/.test(value);
+  };
+
+  // Handle number field changes with validation
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (validateNumber(value)) {
+      setPhone(value);
+    }
+  };
+
+  const handleSeniorPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (validateNumber(value)) {
+      setSeniorPhone(value);
+    }
+  };
+
+  const handleSeniorCollegeIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (validateNumber(value)) {
+      setSeniorCollegeId(value);
+    }
+  };
+
+  // Handle file change
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload a file smaller than 5MB",
+        variant: "destructive",
+      });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+
+    // Check file type (PDF only)
+    if (file.type !== "application/pdf") {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a PDF file",
+        variant: "destructive",
+      });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+
+    setProofFile(file);
   };
 
   return (

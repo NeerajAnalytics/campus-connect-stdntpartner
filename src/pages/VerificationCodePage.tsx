@@ -4,6 +4,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import Footer from "../components/layout/Footer";
 import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   InputOTP, 
   InputOTPGroup, 
@@ -19,7 +20,6 @@ const VerificationCodePage: React.FC = () => {
   const email = searchParams.get("email") || "";
 
   useEffect(() => {
-    // Decrement the countdown timer every second
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
@@ -39,18 +39,13 @@ const VerificationCodePage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // In a real app, we would verify the code with a backend API
-      // For this example, we'll verify against our simulated code in sessionStorage
       const storedCode = sessionStorage.getItem(`vcode_${email}`);
       
       if (!storedCode || storedCode !== verificationCode) {
         throw new Error("Invalid verification code. Please try again.");
       }
       
-      // Clear the verification code from sessionStorage
       sessionStorage.removeItem(`vcode_${email}`);
-      
-      // Redirect to the reset password page
       navigate(`/reset-password?email=${encodeURIComponent(email)}`);
     } catch (error: any) {
       toast({
@@ -76,19 +71,25 @@ const VerificationCodePage: React.FC = () => {
     }
     
     try {
-      // Generate a new verification code
       const newVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
       sessionStorage.setItem(`vcode_${email}`, newVerificationCode);
       
-      // In a real app, this code would be sent via email
-      console.log("New verification code for testing:", newVerificationCode);
-      
-      // Reset the countdown timer to 30 seconds
-      setCountdown(30);
+      // Send new code via email
+      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-password-reset', {
+        body: { 
+          email,
+          code: newVerificationCode
+        }
+      });
 
+      if (emailError) {
+        throw new Error(`Failed to send email: ${emailError.message}`);
+      }
+      
+      setCountdown(30);
       toast({
         title: "Code resent",
-        description: "A new verification code has been generated (check console)",
+        description: "A new verification code has been sent to your email",
       });
     } catch (error: any) {
       toast({
@@ -119,9 +120,6 @@ const VerificationCodePage: React.FC = () => {
             <h1 className="text-2xl font-semibold text-gray-900">Verification Code</h1>
             <p className="mt-2 text-sm text-gray-600">
               Enter the 6-digit code sent to {email}
-            </p>
-            <p className="mt-2 text-sm text-gray-500 italic">
-              (Check your console for the code in this demo)
             </p>
           </div>
 
