@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
@@ -219,67 +220,6 @@ const JuniorReportPage: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  // Validation functions
-  const validateNumber = (value: string) => {
-    return /^\d*$/.test(value);
-  };
-
-  // Handle number field changes with validation
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (validateNumber(value)) {
-      setPhone(value);
-    }
-  };
-
-  const handleSeniorPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (validateNumber(value)) {
-      setSeniorPhone(value);
-    }
-  };
-
-  const handleSeniorCollegeIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (validateNumber(value)) {
-      setSeniorCollegeId(value);
-    }
-  };
-
-  // Handle file change
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Check file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Please upload a file smaller than 5MB",
-        variant: "destructive",
-      });
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      return;
-    }
-
-    // Check file type (PDF only)
-    if (file.type !== "application/pdf") {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload a PDF file",
-        variant: "destructive",
-      });
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      return;
-    }
-
-    setProofFile(file);
   };
 
   return (
