@@ -1,8 +1,17 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import LocationButton from "@/components/ui/LocationButton";
 
 const JuniorHomePage: React.FC = () => {
+  const { signOut } = useAuth();
+  
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[#edf1f8] font-['Poppins']">
       {/* Header/Navigation */}
@@ -26,6 +35,13 @@ const JuniorHomePage: React.FC = () => {
               <Link to="/junior-profile" className="text-gray-700 hover:text-gray-900">
                 Profile
               </Link>
+              <Button 
+                variant="ghost"
+                className="text-gray-700 hover:text-gray-900" 
+                onClick={handleSignOut}
+              >
+                Sign Out
+              </Button>
             </div>
           </div>
         </div>
@@ -85,9 +101,11 @@ const JuniorHomePage: React.FC = () => {
           <div className="flex flex-col md:flex-row gap-8 mb-12">
             <div className="md:w-1/2 space-y-4">
               <h2 className="text-2xl font-bold text-[#1a4e8a]">Way 2 College</h2>
-              <button className="bg-[#cedcf4] text-[#1a4e8a] py-2 px-6 rounded hover:bg-[#b9ccef] transition-colors">
-                NIT'J Location
-              </button>
+              <div className="mb-6">
+                <LocationButton className="px-8 py-3 rounded-full">
+                  NITJ Location
+                </LocationButton>
+              </div>
               <h3 className="text-xl font-bold text-[#1a4e8a] mt-4">Click to locate the place</h3>
             </div>
             <div className="md:w-1/2 flex justify-center items-center">

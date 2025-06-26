@@ -1,7 +1,9 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import LocationButton from "@/components/ui/LocationButton";
 
 const SeniorHomePage: React.FC = () => {
   const { signOut } = useAuth();
@@ -107,9 +109,9 @@ const SeniorHomePage: React.FC = () => {
                   Way 2 College
                 </h2>
                 <div className="mb-6">
-                  <Button className="bg-[#7d9bd2] text-black hover:bg-[#6b89c0] px-8 py-3 rounded-full">
+                  <LocationButton className="px-8 py-3 rounded-full">
                     NITJ Location
-                  </Button>
+                  </LocationButton>
                 </div>
                 <h3 className="text-xl font-semibold text-[#1a4e8a] mb-4">
                   Click to locate the place
