@@ -90,7 +90,9 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <BrowserRouter>
-            <AppContent />
+            <div className="App">
+              <AppContent />
+            </div>
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>

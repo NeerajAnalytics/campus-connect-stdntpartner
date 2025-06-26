@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { AuthContextType } from "@/types/auth";
 import { signUpUser, signInUser, signOutUser, updateUserPassword } from "@/services/authService";
 import { createProfileIfNotExists, updateUserProfile, updateSeniorProfile } from "@/services/profileService";
