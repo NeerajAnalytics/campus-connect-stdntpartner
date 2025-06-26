@@ -1,185 +1,100 @@
 
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import { Toaster } from "./components/ui/toaster";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { useAppSetup } from "@/hooks/useAppSetup";
 import Index from "./pages/Index";
 import InitialPage from "./pages/InitialPage";
 import AuthPage from "./pages/AuthPage";
-import JuniorLoginPage from "./pages/JuniorLoginPage";
 import JuniorSignupPage from "./pages/JuniorSignupPage";
+import JuniorLoginPage from "./pages/JuniorLoginPage";
 import JuniorHomePage from "./pages/JuniorHomePage";
-import ConnectWithSenior from "./pages/ConnectWithSenior";
 import JuniorProfilePage from "./pages/JuniorProfilePage";
 import JuniorEditPage from "./pages/JuniorEditPage";
 import JuniorReportPage from "./pages/JuniorReportPage";
 import JuniorFAQPage from "./pages/JuniorFAQPage";
 import JuniorTermsPage from "./pages/JuniorTermsPage";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import VerificationCodePage from "./pages/VerificationCodePage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import SeniorLoginPage from "./pages/SeniorLoginPage";
 import SeniorSignupPage from "./pages/SeniorSignupPage";
+import SeniorLoginPage from "./pages/SeniorLoginPage";
+import SeniorHomePage from "./pages/SeniorHomePage";
+import SeniorProfilePage from "./pages/SeniorProfilePage";
+import SeniorEditPage from "./pages/SeniorEditPage";
+import SeniorReportPage from "./pages/SeniorReportPage";
+import SeniorFAQPage from "./pages/SeniorFAQPage";
+import SeniorTermsPage from "./pages/SeniorTermsPage";
 import SeniorForgotPasswordPage from "./pages/SeniorForgotPasswordPage";
 import SeniorVerificationCodePage from "./pages/SeniorVerificationCodePage";
 import SeniorResetPasswordPage from "./pages/SeniorResetPasswordPage";
-import SeniorHomePage from "./pages/SeniorHomePage";
-import SeniorProfilePage from "./pages/SeniorProfilePage";
-import SeniorFAQPage from "./pages/SeniorFAQPage";
-import SeniorEditPage from "./pages/SeniorEditPage";
-import SeniorTermsPage from "./pages/SeniorTermsPage";
-import SeniorReportPage from "./pages/SeniorReportPage";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
+import ConnectWithSenior from "./pages/ConnectWithSenior";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import VerificationCodePage from "./pages/VerificationCodePage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import NotFound from "./pages/NotFound";
+import "./App.css";
 
-// This is a placeholder component for routes that are not yet implemented
-const UnderConstruction = () => (
-  <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-    <h1 className="text-4xl font-bold text-[rgba(21,62,117,1)] mb-4">
-      Under Construction
-    </h1>
-    <p className="text-xl text-[rgba(28,56,121,1)] mb-8">
-      This page is currently being developed. Please check back later.
-    </p>
-    <a
-      href="/"
-      className="bg-[rgba(26,78,138,1)] text-white py-2 px-6 rounded-lg hover:bg-[rgba(21,62,117,1)] transition-colors"
-    >
-      Return to Home
-    </a>
-  </div>
-);
+const queryClient = new QueryClient();
+
+function AppContent() {
+  const { isLoading } = useAppSetup();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#edf1f8]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5c7bb5] mx-auto mb-4"></div>
+          <p className="text-gray-600">Setting up CampusConnect...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/initial" element={<InitialPage />} />
+      <Route path="/auth" element={<AuthPage />} />
+      <Route path="/junior-signup" element={<JuniorSignupPage />} />
+      <Route path="/junior-login" element={<JuniorLoginPage />} />
+      <Route path="/junior-home" element={<JuniorHomePage />} />
+      <Route path="/junior-profile" element={<JuniorProfilePage />} />
+      <Route path="/junior-edit" element={<JuniorEditPage />} />
+      <Route path="/junior-report" element={<JuniorReportPage />} />
+      <Route path="/junior-faq" element={<JuniorFAQPage />} />
+      <Route path="/junior-terms" element={<JuniorTermsPage />} />
+      <Route path="/senior-signup" element={<SeniorSignupPage />} />
+      <Route path="/senior-login" element={<SeniorLoginPage />} />
+      <Route path="/senior-home" element={<SeniorHomePage />} />
+      <Route path="/senior-profile" element={<SeniorProfilePage />} />
+      <Route path="/senior-edit" element={<SeniorEditPage />} />
+      <Route path="/senior-report" element={<SeniorReportPage />} />
+      <Route path="/senior-faq" element={<SeniorFAQPage />} />
+      <Route path="/senior-terms" element={<SeniorTermsPage />} />
+      <Route path="/senior-forgot-password" element={<SeniorForgotPasswordPage />} />
+      <Route path="/senior-verification-code" element={<SeniorVerificationCodePage />} />
+      <Route path="/senior-reset-password" element={<SeniorResetPasswordPage />} />
+      <Route path="/connect-with-senior" element={<ConnectWithSenior />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/verification-code" element={<VerificationCodePage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
 
 function App() {
   return (
-    <Router>
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/initial" element={<InitialPage />} />
-          <Route path="/auth" element={<AuthPage />} />
-          
-          {/* Junior routes */}
-          <Route path="/junior-login" element={<JuniorLoginPage />} />
-          <Route path="/junior-signup" element={<JuniorSignupPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/verification-code" element={<VerificationCodePage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route 
-            path="/junior-home" 
-            element={
-              <ProtectedRoute>
-                <JuniorHomePage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/connect-with-senior" 
-            element={
-              <ProtectedRoute>
-                <ConnectWithSenior />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/junior-profile" 
-            element={
-              <ProtectedRoute>
-                <JuniorProfilePage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/junior-edit" 
-            element={
-              <ProtectedRoute>
-                <JuniorEditPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/junior-report" 
-            element={
-              <ProtectedRoute>
-                <JuniorReportPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route path="/junior-faq" element={<JuniorFAQPage />} />
-          <Route path="/junior-terms" element={<JuniorTermsPage />} />
-          
-          {/* Senior routes */}
-          <Route path="/senior-login" element={<SeniorLoginPage />} />
-          <Route path="/senior-signup" element={<SeniorSignupPage />} />
-          <Route path="/senior-forgot-password" element={<SeniorForgotPasswordPage />} />
-          <Route path="/senior-verification-code" element={<SeniorVerificationCodePage />} />
-          <Route path="/senior-reset-password" element={<SeniorResetPasswordPage />} />
-          <Route 
-            path="/senior-home" 
-            element={
-              <ProtectedRoute>
-                <SeniorHomePage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/senior-profile" 
-            element={
-              <ProtectedRoute>
-                <SeniorProfilePage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/senior-edit" 
-            element={
-              <ProtectedRoute>
-                <SeniorEditPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/report" 
-            element={
-              <ProtectedRoute>
-                <SeniorReportPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route path="/senior-faq" element={<SeniorFAQPage />} />
-          <Route path="/senior-terms" element={<SeniorTermsPage />} />
-          
-          {/* Legacy routes */}
-          <Route path="/login" element={<UnderConstruction />} />
-          <Route path="/register" element={<UnderConstruction />} />
-          <Route path="/connect" element={<AuthPage />} />
-          <Route path="/accommodation" element={<UnderConstruction />} />
-          <Route path="/profile" element={<JuniorProfilePage />} />
-          <Route path="/faq" element={<UnderConstruction />} />
-          <Route path="/terms" element={<UnderConstruction />} />
-          
-          <Route
-            path="*"
-            element={
-              <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-                <h1 className="text-4xl font-bold text-[rgba(21,62,117,1)] mb-4">
-                  Page Not Found
-                </h1>
-                <p className="text-xl text-[rgba(28,56,121,1)] mb-8">
-                  The page you are looking for doesn't exist or has been moved.
-                </p>
-                <a
-                  href="/"
-                  className="bg-[rgba(26,78,138,1)] text-white py-2 px-6 rounded-lg hover:bg-[rgba(21,62,117,1)] transition-colors"
-                >
-                  Return to Home
-                </a>
-              </div>
-            }
-          />
-        </Routes>
-        <Toaster />
+        <TooltipProvider>
+          <Toaster />
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </TooltipProvider>
       </AuthProvider>
-    </Router>
+    </QueryClientProvider>
   );
 }
 
