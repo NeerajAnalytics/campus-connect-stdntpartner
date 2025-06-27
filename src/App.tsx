@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import InitialPage from "./pages/InitialPage";
 import AuthPage from "./pages/AuthPage";
@@ -33,50 +34,59 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotFound from "./pages/NotFound";
 import "./App.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <BrowserRouter>
-            <div className="App">
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/initial" element={<InitialPage />} />
-                <Route path="/auth" element={<AuthPage />} />
-                <Route path="/junior-signup" element={<JuniorSignupPage />} />
-                <Route path="/junior-login" element={<JuniorLoginPage />} />
-                <Route path="/junior-home" element={<JuniorHomePage />} />
-                <Route path="/junior-profile" element={<JuniorProfilePage />} />
-                <Route path="/junior-edit" element={<JuniorEditPage />} />
-                <Route path="/junior-report" element={<JuniorReportPage />} />
-                <Route path="/junior-faq" element={<JuniorFAQPage />} />
-                <Route path="/junior-terms" element={<JuniorTermsPage />} />
-                <Route path="/senior-signup" element={<SeniorSignupPage />} />
-                <Route path="/senior-login" element={<SeniorLoginPage />} />
-                <Route path="/senior-home" element={<SeniorHomePage />} />
-                <Route path="/senior-profile" element={<SeniorProfilePage />} />
-                <Route path="/senior-edit" element={<SeniorEditPage />} />
-                <Route path="/senior-report" element={<SeniorReportPage />} />
-                <Route path="/senior-faq" element={<SeniorFAQPage />} />
-                <Route path="/senior-terms" element={<SeniorTermsPage />} />
-                <Route path="/senior-forgot-password" element={<SeniorForgotPasswordPage />} />
-                <Route path="/senior-verification-code" element={<SeniorVerificationCodePage />} />
-                <Route path="/senior-reset-password" element={<SeniorResetPasswordPage />} />
-                <Route path="/connect-with-senior" element={<ConnectWithSenior />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/verification-code" element={<VerificationCodePage />} />
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </div>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <BrowserRouter>
+              <div className="App">
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/initial" element={<InitialPage />} />
+                  <Route path="/auth" element={<AuthPage />} />
+                  <Route path="/junior-signup" element={<JuniorSignupPage />} />
+                  <Route path="/junior-login" element={<JuniorLoginPage />} />
+                  <Route path="/junior-home" element={<JuniorHomePage />} />
+                  <Route path="/junior-profile" element={<JuniorProfilePage />} />
+                  <Route path="/junior-edit" element={<JuniorEditPage />} />
+                  <Route path="/junior-report" element={<JuniorReportPage />} />
+                  <Route path="/junior-faq" element={<JuniorFAQPage />} />
+                  <Route path="/junior-terms" element={<JuniorTermsPage />} />
+                  <Route path="/senior-signup" element={<SeniorSignupPage />} />
+                  <Route path="/senior-login" element={<SeniorLoginPage />} />
+                  <Route path="/senior-home" element={<SeniorHomePage />} />
+                  <Route path="/senior-profile" element={<SeniorProfilePage />} />
+                  <Route path="/senior-edit" element={<SeniorEditPage />} />
+                  <Route path="/senior-report" element={<SeniorReportPage />} />
+                  <Route path="/senior-faq" element={<SeniorFAQPage />} />
+                  <Route path="/senior-terms" element={<SeniorTermsPage />} />
+                  <Route path="/senior-forgot-password" element={<SeniorForgotPasswordPage />} />
+                  <Route path="/senior-verification-code" element={<SeniorVerificationCodePage />} />
+                  <Route path="/senior-reset-password" element={<SeniorResetPasswordPage />} />
+                  <Route path="/connect-with-senior" element={<ConnectWithSenior />} />
+                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                  <Route path="/verification-code" element={<VerificationCodePage />} />
+                  <Route path="/reset-password" element={<ResetPasswordPage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </div>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { AuthContextType } from "@/types/auth";
 import { signUpUser, signInUser, signOutUser, updateUserPassword } from "@/services/authService";
-import { createProfileIfNotExists, updateUserProfile, updateSeniorProfile } from "@/services/profileService";
+import { updateUserProfile, updateSeniorProfile } from "@/services/profileService";
 import { useAuthNavigation } from "@/hooks/useAuthNavigation";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,29 +17,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { navigateAfterSignUp, navigateAfterSignIn, navigateAfterSignOut } = useAuthNavigation();
 
   useEffect(() => {
-    // Set up auth state listener first
+    console.log('Setting up auth listener...');
+    
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
-        console.log("Auth state change:", event, newSession?.user?.id);
-        // Only update with synchronous state updates here
+        console.log('Auth state change:', event, newSession?.user?.id);
         setSession(newSession);
         setUser(newSession?.user ?? null);
-        
-        // Use setTimeout to avoid deadlock with other Supabase calls
-        if (newSession?.user && event === 'SIGNED_IN') {
-          setTimeout(() => {
-            console.log("Creating profile for signed in user:", newSession.user.id);
-            // Create a profile for the user if it doesn't exist
-            createProfileIfNotExists(newSession.user.id, newSession.user.user_metadata);
-          }, 0);
-        }
+        setLoading(false);
       }
     );
 
-    // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Error getting session:', error);
+      }
+      console.log('Initial session:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
+      setLoading(false);
+    }).catch((error) => {
+      console.error('Error getting session:', error);
       setLoading(false);
     });
 
