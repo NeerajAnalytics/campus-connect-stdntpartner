@@ -51,7 +51,7 @@ function App() {
           <Toaster />
           <BrowserRouter>
             <AuthProvider>
-              <div className="App">
+              <div className="App w-full min-h-screen">
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/initial" element={<InitialPage />} />

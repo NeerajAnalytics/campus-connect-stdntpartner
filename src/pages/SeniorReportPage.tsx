@@ -1,90 +1,67 @@
-import React, { useState, useRef } from "react";
+
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
+import { Separator } from "../components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase, getReports } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { useFileUpload } from "@/hooks/useFileUpload";
+import { useFormValidation } from "@/hooks/useFormValidation";
 import Footer from "../components/layout/Footer";
 
 const SeniorReportPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { proofFile, fileInputRef, handleFileChange, clearFile } = useFileUpload();
+  const { createNumberHandler } = useFormValidation();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [rollNo, setRollNo] = useState("");
-  const [issueDescription, setIssueDescription] = useState("");
-  const [proofs, setProofs] = useState("");
-  const [proofFile, setProofFile] = useState<File | null>(null);
-  const [juniorName, setJuniorName] = useState("");
-  const [juniorBranch, setJuniorBranch] = useState("");
-  const [juniorPhone, setJuniorPhone] = useState("");
-  const [juniorEmail, setJuniorEmail] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    rollNo: "",
+    email: "",
+    phone: "",
+    issueDescription: "",
+    proofs: "",
+    juniorName: "",
+    juniorBranch: "",
+    juniorPhone: "",
+    juniorEmail: ""
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Validation functions
-  const validateNumber = (value: string) => {
-    return /^\d*$/.test(value);
-  };
-
-  // Handle number field changes with validation
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Validation for alphabets only
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (validateNumber(value)) {
-      setPhone(value);
+    if (/^[a-zA-Z\s]*$/.test(value)) {
+      setFormData(prev => ({ ...prev, name: value }));
     }
   };
 
-  const handleRollNoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleJuniorNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (validateNumber(value)) {
-      setRollNo(value);
+    if (/^[a-zA-Z\s]*$/.test(value)) {
+      setFormData(prev => ({ ...prev, juniorName: value }));
     }
   };
 
-  const handleJuniorPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (validateNumber(value)) {
-      setJuniorPhone(value);
-    }
-  };
+  // Number validation handlers
+  const handleRollNoChange = createNumberHandler((value) => 
+    setFormData(prev => ({ ...prev, rollNo: value }))
+  );
 
-  // Handle file change
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handlePhoneChange = createNumberHandler((value) => 
+    setFormData(prev => ({ ...prev, phone: value }))
+  );
 
-    // Check file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Please upload a file smaller than 5MB",
-        variant: "destructive",
-      });
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      return;
-    }
+  const handleJuniorPhoneChange = createNumberHandler((value) => 
+    setFormData(prev => ({ ...prev, juniorPhone: value }))
+  );
 
-    // Check file type (PDF only)
-    if (file.type !== "application/pdf") {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload a PDF file",
-        variant: "destructive",
-      });
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      return;
-    }
-
-    setProofFile(file);
+  const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, [field]: e.target.value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -92,18 +69,17 @@ const SeniorReportPage: React.FC = () => {
     
     if (!user) {
       toast({
-        title: "Error",
+        title: "Authentication Error",
         description: "You must be logged in to submit a report",
         variant: "destructive",
       });
       return;
     }
 
-    // Basic validation
-    if (!name || !email || !issueDescription) {
+    if (!formData.name || !formData.email || !formData.issueDescription) {
       toast({
-        title: "Error",
-        description: "Please fill in all required fields",
+        title: "Missing Information",
+        description: "Please fill in all required fields (Name, Email, Issue Description)",
         variant: "destructive",
       });
       return;
@@ -112,56 +88,65 @@ const SeniorReportPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      let proofFileUrl = proofs;
+      let proofFileUrl = formData.proofs;
 
       // Upload file if provided
       if (proofFile) {
-        const fileName = `${Date.now()}_${proofFile.name}`;
+        const fileName = `senior_report_${Date.now()}_${proofFile.name}`;
+        console.log("Uploading file:", fileName);
+        
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('reports')
           .upload(fileName, proofFile);
 
         if (uploadError) {
           console.error("File upload error:", uploadError);
-          // Continue without file if upload fails
-          proofFileUrl = proofs || "File upload failed";
+          toast({
+            title: "File Upload Failed",
+            description: "Unable to upload proof file. Report will be submitted without it.",
+            variant: "destructive",
+          });
         } else {
           const { data: { publicUrl } } = supabase.storage
             .from('reports')
             .getPublicUrl(fileName);
           proofFileUrl = publicUrl;
+          console.log("File uploaded successfully:", publicUrl);
         }
       }
       
-      // Save report to database with senior-specific fields
+      // Prepare report data
       const reportData = {
         user_id: user.id,
-        name,
-        email,
-        phone,
-        roll_no: rollNo,
-        issue_description: issueDescription,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        roll_no: formData.rollNo,
+        issue_description: formData.issueDescription,
         proofs: proofFileUrl,
-        junior_name: juniorName,
-        junior_branch: juniorBranch,
-        junior_phone: juniorPhone,
-        junior_email: juniorEmail
+        junior_name: formData.juniorName,
+        junior_branch: formData.juniorBranch,
+        junior_phone: formData.juniorPhone,
+        junior_email: formData.juniorEmail
       };
 
-      console.log("Submitting senior report data:", reportData);
+      console.log("Submitting senior report:", reportData);
 
-      const { error: saveError } = await getReports().insert(reportData);
+      // Save to database
+      const { error: saveError } = await supabase
+        .from('reports')
+        .insert(reportData);
 
       if (saveError) {
         console.error("Database save error:", saveError);
-        throw saveError;
+        throw new Error(`Failed to save report: ${saveError.message}`);
       }
 
-      console.log("Senior report saved to database successfully");
+      console.log("Report saved to database successfully");
 
-      // Send email using new edge function
+      // Send email notification
       try {
-        console.log("Sending senior report email notification...");
+        console.log("Sending email notification...");
         const { data: emailData, error: emailError } = await supabase.functions.invoke('send-report-email', {
           body: { 
             reportData: {
@@ -172,53 +157,50 @@ const SeniorReportPage: React.FC = () => {
           }
         });
 
-        console.log("Senior report email function response:", emailData);
-
         if (emailError) {
-          console.error("Senior report email notification error:", emailError);
-          throw new Error(`Email sending failed: ${emailError.message}`);
+          console.error("Email sending error:", emailError);
+          throw new Error(`Email failed: ${emailError.details || emailError.message}`);
         }
 
-        console.log("Senior report email sent successfully");
+        console.log("Email sent successfully:", emailData);
+        
+        toast({
+          title: "Report Submitted Successfully!",
+          description: "Your report has been submitted and sent to stdntpartner@gmail.com.",
+        });
+
+        // Reset form
+        setFormData({
+          name: "",
+          rollNo: "",
+          email: "",
+          phone: "",
+          issueDescription: "",
+          proofs: "",
+          juniorName: "",
+          juniorBranch: "",
+          juniorPhone: "",
+          juniorEmail: ""
+        });
+        clearFile();
+
+        // Navigate to profile after short delay
+        setTimeout(() => navigate("/senior-profile"), 1500);
+
       } catch (emailError: any) {
-        console.error("Failed to send senior report email notification:", emailError);
+        console.error("Email notification failed:", emailError);
         toast({
           title: "Report Submitted",
-          description: "Your report has been submitted successfully. However, there was an issue sending the email notification.",
+          description: "Your report was saved but email notification failed. We'll contact you soon.",
           variant: "destructive",
         });
-        return;
       }
-
-      toast({
-        title: "Report Submitted",
-        description: "Your report has been submitted successfully and sent to stdntpartner@gmail.com.",
-      });
-
-      // Reset form
-      setName("");
-      setEmail("");
-      setPhone("");
-      setRollNo("");
-      setIssueDescription("");
-      setProofs("");
-      setProofFile(null);
-      setJuniorName("");
-      setJuniorBranch("");
-      setJuniorPhone("");
-      setJuniorEmail("");
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-
-      // Redirect to profile page
-      navigate("/senior-profile");
 
     } catch (error: any) {
-      console.error("Senior report submission error:", error);
+      console.error("Report submission error:", error);
       toast({
-        title: "Error submitting report",
-        description: error.message || "An unexpected error occurred",
+        title: "Submission Failed",
+        description: error.message || "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -228,7 +210,7 @@ const SeniorReportPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#edf1f8] font-['Poppins']">
-      {/* Header/Navigation */}
+      {/* Header - Same style as senior-home */}
       <header className="bg-[#edf1f8] border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -237,10 +219,10 @@ const SeniorReportPage: React.FC = () => {
             </Link>
             
             <div className="flex items-center gap-8">
-              <Link to="/senior-home" className="text-gray-700 hover:text-gray-900">
+              <Link to="/senior-home" className="text-gray-700 hover:text-gray-900 font-medium">
                 Home
               </Link>
-              <Link to="/senior-profile" className="text-gray-700 hover:text-gray-900">
+              <Link to="/senior-profile" className="text-gray-700 hover:text-gray-900 font-medium">
                 Profile
               </Link>
             </div>
@@ -249,199 +231,215 @@ const SeniorReportPage: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow py-6 px-4">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl font-semibold text-center mb-6">Report page for Seniors</h2>
-          <hr className="border-gray-300 mb-6" />
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <h3 className="text-xl font-semibold mb-4">We are Here to Help you.</h3>
+      <main className="flex-grow py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-lg shadow-sm p-8">
+            <h1 className="text-3xl font-semibold text-center text-gray-800 mb-8">
+              Here we are to help you
+            </h1>
             
-            <div className="flex items-start mb-4">
-              <div className="w-40 font-semibold">Your Name</div>
-              <div className="text-xl">:</div>
-              <div className="flex-1 ml-2">
-                <Input 
-                  type="text" 
-                  className="border-gray-300" 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  disabled={isSubmitting}
-                  required
-                />
-              </div>
-            </div>
+            <Separator className="mb-8" />
             
-            <div className="flex items-start mb-4">
-              <div className="w-40 font-semibold">Your Mail ID</div>
-              <div className="text-xl">:</div>
-              <div className="flex-1 ml-2">
-                <Input 
-                  type="email" 
-                  className="border-gray-300" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isSubmitting}
-                  required
-                />
-              </div>
-            </div>
-            
-            <div className="flex items-start mb-4">
-              <div className="w-40 font-semibold">Your Phone No</div>
-              <div className="text-xl">:</div>
-              <div className="flex-1 ml-2">
-                <Input 
-                  type="tel" 
-                  className="border-gray-300" 
-                  value={phone}
-                  onChange={handlePhoneChange}
-                  disabled={isSubmitting}
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                />
-              </div>
-            </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Personal Information Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Your Name <span className="text-red-500">*</span>
+                  </label>
+                  <Input 
+                    type="text"
+                    value={formData.name}
+                    onChange={handleNameChange}
+                    placeholder="Enter your full name"
+                    className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
+                    disabled={isSubmitting}
+                    required
+                  />
+                  <p className="text-xs text-gray-500">Only alphabets allowed</p>
+                </div>
 
-            <div className="flex items-start mb-4">
-              <div className="w-40 font-semibold">Your Roll No</div>
-              <div className="text-xl">:</div>
-              <div className="flex-1 ml-2">
-                <Input 
-                  type="text" 
-                  className="border-gray-300" 
-                  value={rollNo}
-                  onChange={handleRollNoChange}
-                  disabled={isSubmitting}
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                />
-              </div>
-            </div>
-            
-            <div className="mb-4">
-              <div className="font-semibold mb-2">Describe The Issue:</div>
-              <Textarea 
-                className="w-full border-gray-300" 
-                rows={3} 
-                value={issueDescription}
-                onChange={(e) => setIssueDescription(e.target.value)}
-                disabled={isSubmitting}
-                required
-              />
-            </div>
-            
-            <div className="flex items-start mb-4">
-              <div className="w-40 font-semibold">Proofs (IF ANY)</div>
-              <div className="text-xl">:</div>
-              <div className="flex-1 ml-2 space-y-2">
-                <Input 
-                  type="text" 
-                  className="border-gray-300" 
-                  value={proofs}
-                  onChange={(e) => setProofs(e.target.value)}
-                  disabled={isSubmitting}
-                  placeholder="Links to screenshots or documents"
-                />
-                <div>
-                  <p className="text-xs text-gray-500 mb-2">Or upload a PDF file (max 5MB)</p>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Your Roll No <span className="text-red-500">*</span>
+                  </label>
                   <Input 
-                    ref={fileInputRef}
-                    type="file" 
-                    accept="application/pdf" 
-                    onChange={handleFileChange}
-                    disabled={isSubmitting}
-                    className="border-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#7d9bd2] file:text-white hover:file:bg-[#6b89c0]"
-                  />
-                </div>
-              </div>
-            </div>
-            
-            <hr className="border-gray-300 my-6" />
-            
-            <div className="mb-4">
-              <h3 className="font-semibold mb-4">Details of Junior, if your issue is with them:</h3>
-              
-              <div className="flex items-center mb-4">
-                <div className="w-28 font-semibold">Name</div>
-                <div className="text-xl">:</div>
-                <div className="flex-1 ml-2">
-                  <Input 
-                    type="text" 
-                    className="border-gray-300" 
-                    value={juniorName}
-                    onChange={(e) => setJuniorName(e.target.value)}
-                    disabled={isSubmitting}
-                  />
-                </div>
-              </div>
-              
-              <div className="flex items-center mb-4">
-                <div className="w-28 font-semibold">Branch</div>
-                <div className="text-xl">:</div>
-                <div className="flex-1 ml-2">
-                  <Input 
-                    type="text" 
-                    className="border-gray-300" 
-                    value={juniorBranch}
-                    onChange={(e) => setJuniorBranch(e.target.value)}
-                    disabled={isSubmitting}
-                  />
-                </div>
-              </div>
-              
-              <div className="flex items-center mb-4">
-                <div className="w-28 font-semibold">Phone No</div>
-                <div className="text-xl">:</div>
-                <div className="flex-1 ml-2">
-                  <Input 
-                    type="tel" 
-                    className="border-gray-300" 
-                    value={juniorPhone}
-                    onChange={handleJuniorPhoneChange}
+                    type="text"
+                    value={formData.rollNo}
+                    onChange={handleRollNoChange}
+                    placeholder="Enter your roll number"
+                    className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
                     disabled={isSubmitting}
                     inputMode="numeric"
-                    pattern="[0-9]*"
+                    required
+                  />
+                  <p className="text-xs text-gray-500">Only numbers allowed</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Your Mail ID <span className="text-red-500">*</span>
+                  </label>
+                  <Input 
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange('email')}
+                    placeholder="Enter your email address"
+                    className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
+                    disabled={isSubmitting}
+                    required
                   />
                 </div>
-              </div>
-              
-              <div className="flex items-center mb-4">
-                <div className="w-28 font-semibold">G-Mail</div>
-                <div className="text-xl">:</div>
-                <div className="flex-1 ml-2">
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Your Phone No
+                  </label>
                   <Input 
-                    type="email" 
-                    className="border-gray-300" 
-                    value={juniorEmail}
-                    onChange={(e) => setJuniorEmail(e.target.value)}
+                    type="tel"
+                    value={formData.phone}
+                    onChange={handlePhoneChange}
+                    placeholder="Enter your phone number"
+                    className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
+                    disabled={isSubmitting}
+                    inputMode="numeric"
+                  />
+                  <p className="text-xs text-gray-500">Only numbers allowed</p>
+                </div>
+              </div>
+
+              {/* Issue Description */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Describe the Issue <span className="text-red-500">*</span>
+                </label>
+                <Textarea 
+                  value={formData.issueDescription}
+                  onChange={handleInputChange('issueDescription')}
+                  placeholder="Please describe your issue in detail..."
+                  className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5] min-h-[120px]"
+                  disabled={isSubmitting}
+                  required
+                />
+              </div>
+
+              {/* Proofs Section */}
+              <div className="space-y-4">
+                <label className="text-sm font-medium text-gray-700">
+                  Proofs related to it (If any)
+                </label>
+                
+                <div className="space-y-3">
+                  <Input 
+                    type="text"
+                    value={formData.proofs}
+                    onChange={handleInputChange('proofs')}
+                    placeholder="Paste links to screenshots or documents"
+                    className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
                     disabled={isSubmitting}
                   />
+                  
+                  <div className="text-center text-gray-500 text-sm">OR</div>
+                  
+                  <div className="space-y-2">
+                    <Input 
+                      ref={fileInputRef}
+                      type="file"
+                      accept="application/pdf"
+                      onChange={handleFileChange}
+                      className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#7d9bd2] file:text-white hover:file:bg-[#6b89c0]"
+                      disabled={isSubmitting}
+                    />
+                    <p className="text-xs text-gray-500">Upload a PDF file (maximum 5MB)</p>
+                    {proofFile && (
+                      <p className="text-sm text-green-600">File selected: {proofFile.name}</p>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            <hr className="border-gray-300 mb-6" />
-            
-            <div className="flex justify-center gap-4">
-              <Button
-                type="button"
-                className="bg-gray-400 text-white hover:bg-gray-500 rounded-md px-8"
-                onClick={() => navigate('/senior-profile')}
-                disabled={isSubmitting}
-              >
-                Back
-              </Button>
 
-              <Button
-                type="submit"
-                className="bg-[#7d9bd2] text-black hover:bg-[#6b89c0] rounded-md px-8"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Submitting..." : "Submit"}
-              </Button>
-            </div>
-          </form>
+              <Separator className="my-8" />
+
+              {/* Junior Details Section */}
+              <div className="space-y-6">
+                <h3 className="text-lg font-medium text-gray-800">
+                  Details of the Junior, if your issue is with them:
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Name</label>
+                    <Input 
+                      type="text"
+                      value={formData.juniorName}
+                      onChange={handleJuniorNameChange}
+                      placeholder="Junior's full name"
+                      className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Branch</label>
+                    <Input 
+                      type="text"
+                      value={formData.juniorBranch}
+                      onChange={handleInputChange('juniorBranch')}
+                      placeholder="Junior's branch/department"
+                      className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Phone No</label>
+                    <Input 
+                      type="tel"
+                      value={formData.juniorPhone}
+                      onChange={handleJuniorPhoneChange}
+                      placeholder="Junior's phone number"
+                      className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
+                      disabled={isSubmitting}
+                      inputMode="numeric"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Mail ID</label>
+                    <Input 
+                      type="email"
+                      value={formData.juniorEmail}
+                      onChange={handleInputChange('juniorEmail')}
+                      placeholder="Junior's email address"
+                      className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="flex justify-center gap-4 pt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate('/senior-profile')}
+                  disabled={isSubmitting}
+                  className="px-8 py-2 border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  Back
+                </Button>
+
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-8 py-2 bg-[#7d9bd2] text-white hover:bg-[#6b89c0] focus:ring-[#5c7bb5]"
+                >
+                  {isSubmitting ? "Submitting..." : "Submit"}
+                </Button>
+              </div>
+            </form>
+          </div>
         </div>
       </main>
 
