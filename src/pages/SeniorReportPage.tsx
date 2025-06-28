@@ -32,6 +32,27 @@ const SeniorReportPage: React.FC = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Redirect if not authenticated
+  React.useEffect(() => {
+    if (!user) {
+      navigate('/senior-login');
+    }
+  }, [user, navigate]);
+
+  // If user is not authenticated, show loading or redirect
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p>Please log in to access this page.</p>
+          <Link to="/senior-login" className="text-blue-500 hover:underline">
+            Go to Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   // Validation handlers
   const handleNameChange = createAlphabetHandler((value) => 
     setFormData(prev => ({ ...prev, name: value }))
@@ -60,15 +81,8 @@ const SeniorReportPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user) {
-      toast({
-        title: "Authentication Error",
-        description: "You must be logged in to submit a report",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    console.log("Form submission started");
+    
     if (!formData.name || !formData.email || !formData.issueDescription) {
       toast({
         title: "Missing Information",
@@ -152,15 +166,20 @@ const SeniorReportPage: React.FC = () => {
 
         if (emailError) {
           console.error("Email sending error:", emailError);
-          throw new Error(`Email failed: ${emailError.details || emailError.message}`);
+          console.log("Email error details:", emailError);
+          
+          // Still show success for database save
+          toast({
+            title: "Report Submitted",
+            description: "Your report has been saved successfully. Email notification may be delayed.",
+          });
+        } else {
+          console.log("Email sent successfully:", emailData);
+          toast({
+            title: "Report Submitted Successfully!",
+            description: "Your report has been submitted and sent to stdntpartner@gmail.com.",
+          });
         }
-
-        console.log("Email sent successfully:", emailData);
-        
-        toast({
-          title: "Report Submitted Successfully!",
-          description: "Your report has been submitted and sent to stdntpartner@gmail.com.",
-        });
 
         // Reset form
         setFormData({
@@ -185,7 +204,6 @@ const SeniorReportPage: React.FC = () => {
         toast({
           title: "Report Submitted",
           description: "Your report was saved but email notification failed. We'll contact you soon.",
-          variant: "destructive",
         });
       }
 
