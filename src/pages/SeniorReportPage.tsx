@@ -16,7 +16,7 @@ const SeniorReportPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { proofFile, fileInputRef, handleFileChange, clearFile } = useFileUpload();
-  const { createNumberHandler } = useFormValidation();
+  const { createNumberHandler, createAlphabetHandler } = useFormValidation();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -32,22 +32,15 @@ const SeniorReportPage: React.FC = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Validation for alphabets only
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (/^[a-zA-Z\s]*$/.test(value)) {
-      setFormData(prev => ({ ...prev, name: value }));
-    }
-  };
+  // Validation handlers
+  const handleNameChange = createAlphabetHandler((value) => 
+    setFormData(prev => ({ ...prev, name: value }))
+  );
 
-  const handleJuniorNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (/^[a-zA-Z\s]*$/.test(value)) {
-      setFormData(prev => ({ ...prev, juniorName: value }));
-    }
-  };
+  const handleJuniorNameChange = createAlphabetHandler((value) => 
+    setFormData(prev => ({ ...prev, juniorName: value }))
+  );
 
-  // Number validation handlers
   const handleRollNoChange = createNumberHandler((value) => 
     setFormData(prev => ({ ...prev, rollNo: value }))
   );
@@ -210,7 +203,7 @@ const SeniorReportPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#edf1f8] font-['Poppins']">
-      {/* Header - Same style as senior-home */}
+      {/* Header */}
       <header className="bg-[#edf1f8] border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -231,16 +224,16 @@ const SeniorReportPage: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow py-8 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-sm p-8">
+      <main className="flex-grow py-8 px-4 w-full">
+        <div className="max-w-4xl mx-auto w-full">
+          <div className="bg-white rounded-lg shadow-sm p-8 w-full">
             <h1 className="text-3xl font-semibold text-center text-gray-800 mb-8">
               Here we are to help you
             </h1>
             
             <Separator className="mb-8" />
             
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6 w-full">
               {/* Personal Information Section */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -252,7 +245,7 @@ const SeniorReportPage: React.FC = () => {
                     value={formData.name}
                     onChange={handleNameChange}
                     placeholder="Enter your full name"
-                    className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
+                    className="w-full border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
                     disabled={isSubmitting}
                     required
                   />
@@ -268,7 +261,7 @@ const SeniorReportPage: React.FC = () => {
                     value={formData.rollNo}
                     onChange={handleRollNoChange}
                     placeholder="Enter your roll number"
-                    className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
+                    className="w-full border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
                     disabled={isSubmitting}
                     inputMode="numeric"
                     required
@@ -285,7 +278,7 @@ const SeniorReportPage: React.FC = () => {
                     value={formData.email}
                     onChange={handleInputChange('email')}
                     placeholder="Enter your email address"
-                    className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
+                    className="w-full border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
                     disabled={isSubmitting}
                     required
                   />
@@ -300,7 +293,7 @@ const SeniorReportPage: React.FC = () => {
                     value={formData.phone}
                     onChange={handlePhoneChange}
                     placeholder="Enter your phone number"
-                    className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
+                    className="w-full border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
                     disabled={isSubmitting}
                     inputMode="numeric"
                   />
@@ -311,13 +304,13 @@ const SeniorReportPage: React.FC = () => {
               {/* Issue Description */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
-                  Describe the Issue <span className="text-red-500">*</span>
+                  Describe the issue <span className="text-red-500">*</span>
                 </label>
                 <Textarea 
                   value={formData.issueDescription}
                   onChange={handleInputChange('issueDescription')}
                   placeholder="Please describe your issue in detail..."
-                  className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5] min-h-[120px]"
+                  className="w-full border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5] min-h-[120px]"
                   disabled={isSubmitting}
                   required
                 />
@@ -335,7 +328,7 @@ const SeniorReportPage: React.FC = () => {
                     value={formData.proofs}
                     onChange={handleInputChange('proofs')}
                     placeholder="Paste links to screenshots or documents"
-                    className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
+                    className="w-full border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
                     disabled={isSubmitting}
                   />
                   
@@ -347,7 +340,7 @@ const SeniorReportPage: React.FC = () => {
                       type="file"
                       accept="application/pdf"
                       onChange={handleFileChange}
-                      className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#7d9bd2] file:text-white hover:file:bg-[#6b89c0]"
+                      className="w-full border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#7d9bd2] file:text-white hover:file:bg-[#6b89c0]"
                       disabled={isSubmitting}
                     />
                     <p className="text-xs text-gray-500">Upload a PDF file (maximum 5MB)</p>
@@ -374,7 +367,7 @@ const SeniorReportPage: React.FC = () => {
                       value={formData.juniorName}
                       onChange={handleJuniorNameChange}
                       placeholder="Junior's full name"
-                      className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
+                      className="w-full border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
                       disabled={isSubmitting}
                     />
                   </div>
@@ -386,7 +379,7 @@ const SeniorReportPage: React.FC = () => {
                       value={formData.juniorBranch}
                       onChange={handleInputChange('juniorBranch')}
                       placeholder="Junior's branch/department"
-                      className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
+                      className="w-full border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
                       disabled={isSubmitting}
                     />
                   </div>
@@ -398,7 +391,7 @@ const SeniorReportPage: React.FC = () => {
                       value={formData.juniorPhone}
                       onChange={handleJuniorPhoneChange}
                       placeholder="Junior's phone number"
-                      className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
+                      className="w-full border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
                       disabled={isSubmitting}
                       inputMode="numeric"
                     />
@@ -411,7 +404,7 @@ const SeniorReportPage: React.FC = () => {
                       value={formData.juniorEmail}
                       onChange={handleInputChange('juniorEmail')}
                       placeholder="Junior's email address"
-                      className="border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
+                      className="w-full border-gray-300 focus:border-[#5c7bb5] focus:ring-[#5c7bb5]"
                       disabled={isSubmitting}
                     />
                   </div>

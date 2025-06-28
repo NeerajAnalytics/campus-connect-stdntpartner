@@ -20,7 +20,7 @@ export const useFormValidation = () => {
   const createNumberHandler = (setter: (value: string) => void) => {
     return (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-      if (validateNumber(value)) {
+      if (validateNumber(value) || value === '') {
         setter(value);
       }
     };
@@ -29,7 +29,7 @@ export const useFormValidation = () => {
   const createAlphabetHandler = (setter: (value: string) => void) => {
     return (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-      if (validateAlphabets(value)) {
+      if (validateAlphabets(value) || value === '') {
         setter(value);
       }
     };

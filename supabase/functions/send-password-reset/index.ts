@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resend = new Resend("re_TiDxCjot_hJFzd5tsZFNYFq5V4JhRAcMS");
 
 interface PasswordResetRequest {
   email: string;
@@ -25,7 +25,6 @@ serve(async (req) => {
     
     console.log("Sending password reset code to:", email);
     console.log("Verification code:", code);
-    console.log("Resend API Key available:", !!Deno.env.get("RESEND_API_KEY"));
     
     const htmlContent = `
 <!DOCTYPE html>

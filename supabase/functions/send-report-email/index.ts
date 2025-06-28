@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resend = new Resend("re_TiDxCjot_hJFzd5tsZFNYFq5V4JhRAcMS");
 
 interface ReportData {
   name: string;
@@ -43,7 +43,6 @@ serve(async (req) => {
     const { reportData, receiverEmail } = JSON.parse(requestBody) as RequestData;
     
     console.log("Parsed data:", { reportData, receiverEmail });
-    console.log("Resend API Key available:", !!Deno.env.get("RESEND_API_KEY"));
     
     // Build email content based on report type
     const isJuniorReport = reportData.reportType === 'junior';
@@ -162,7 +161,6 @@ This report was submitted through CampusConnect
 Please respond to the reporter at: ${reportData.email}`;
 
     console.log("Attempting to send email to:", receiverEmail);
-    console.log("From:", reportData.name, reportData.email);
 
     const emailResponse = await resend.emails.send({
       from: "CampusConnect Reports <onboarding@resend.dev>",

@@ -53,11 +53,22 @@ header {
 footer {
   width: 100%;
   margin-top: auto;
+  background-color: #edf1f8;
+  border-top: 1px solid #e2e8f0;
 }
 
 /* Form and input styling */
 input, textarea, button, select {
   font-family: inherit;
+}
+
+/* Full width container */
+.max-w-7xl, .max-w-4xl, .max-w-3xl {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 /* Responsive design */
