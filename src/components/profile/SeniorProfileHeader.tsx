@@ -26,7 +26,7 @@ const SeniorProfileHeader: React.FC = () => {
             <Link to="/accommodation" className="text-gray-700 hover:text-gray-900">
               Accommodation
             </Link>
-            <Link to="/report" className="text-gray-700 hover:text-gray-900">
+            <Link to="/senior-report" className="text-gray-700 hover:text-gray-900">
               Report
             </Link>
             <Link to="/senior-profile" className="text-gray-700 hover:text-gray-900">
