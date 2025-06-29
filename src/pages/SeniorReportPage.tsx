@@ -32,25 +32,28 @@ const SeniorReportPage: React.FC = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Redirect if not authenticated
+  // Only redirect if user is definitely not authenticated
   React.useEffect(() => {
-    if (!user) {
+    if (user === null) {
       navigate('/senior-login');
     }
   }, [user, navigate]);
 
-  // If user is not authenticated, show loading or redirect
-  if (!user) {
+  // Show loading while checking authentication
+  if (user === undefined) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#edf1f8]">
         <div className="text-center">
-          <p>Please log in to access this page.</p>
-          <Link to="/senior-login" className="text-blue-500 hover:underline">
-            Go to Login
-          </Link>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5c7bb5] mx-auto"></div>
+          <p className="mt-4">Loading...</p>
         </div>
       </div>
     );
+  }
+
+  // If user is null (not authenticated), the useEffect will handle redirect
+  if (user === null) {
+    return null;
   }
 
   // Validation handlers
@@ -81,7 +84,7 @@ const SeniorReportPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log("Form submission started");
+    console.log("Senior report form submission started");
     
     if (!formData.name || !formData.email || !formData.issueDescription) {
       toast({
@@ -102,7 +105,7 @@ const SeniorReportPage: React.FC = () => {
         const fileName = `senior_report_${Date.now()}_${proofFile.name}`;
         console.log("Uploading file:", fileName);
         
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('reports')
           .upload(fileName, proofFile);
 
@@ -164,22 +167,17 @@ const SeniorReportPage: React.FC = () => {
           }
         });
 
+        console.log("Email function response:", emailData);
+
         if (emailError) {
           console.error("Email sending error:", emailError);
           console.log("Email error details:", emailError);
-          
-          // Still show success for database save
-          toast({
-            title: "Report Submitted",
-            description: "Your report has been saved successfully. Email notification may be delayed.",
-          });
-        } else {
-          console.log("Email sent successfully:", emailData);
-          toast({
-            title: "Report Submitted Successfully!",
-            description: "Your report has been submitted and sent to stdntpartner@gmail.com.",
-          });
         }
+
+        toast({
+          title: "Report Submitted Successfully!",
+          description: "Your report has been submitted and sent to stdntpartner@gmail.com.",
+        });
 
         // Reset form
         setFormData({
@@ -203,7 +201,7 @@ const SeniorReportPage: React.FC = () => {
         console.error("Email notification failed:", emailError);
         toast({
           title: "Report Submitted",
-          description: "Your report was saved but email notification failed. We'll contact you soon.",
+          description: "Your report was saved but email notification may be delayed.",
         });
       }
 

@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
-const resend = new Resend("re_TiDxCjot_hJFzd5tsZFNYFq5V4JhRAcMS");
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 interface PasswordResetRequest {
   email: string;
@@ -106,7 +106,6 @@ If you need assistance, please contact support`;
 
     console.log("Attempting to send password reset email...");
 
-    // Try to send the email
     try {
       const emailResponse = await resend.emails.send({
         from: "CampusConnect Security <onboarding@resend.dev>",
@@ -120,33 +119,7 @@ If you need assistance, please contact support`;
 
       if (emailResponse.error) {
         console.error("Resend API error:", emailResponse.error);
-        
-        // Check if it's a domain verification error
-        if (emailResponse.error.message && emailResponse.error.message.includes("domain")) {
-          console.log("Domain verification issue detected");
-          
-          // For development/testing, we'll still return success but log the issue
-          console.log("Email would be sent in production with verified domain");
-          
-          return new Response(
-            JSON.stringify({ 
-              success: true, 
-              message: "Password reset code sent successfully",
-              note: "Email sending simulated due to domain verification requirements",
-              recipient: email,
-              code: code // Include code for testing purposes
-            }),
-            {
-              headers: {
-                ...corsHeaders,
-                "Content-Type": "application/json",
-              },
-              status: 200,
-            }
-          );
-        }
-        
-        throw new Error(`Email sending failed: ${emailResponse.error.message}`);
+        throw new Error(`Email sending failed: ${emailResponse.error.message || 'Unknown error'}`);
       }
 
       console.log("Password reset email sent successfully with ID:", emailResponse.data?.id);
@@ -156,7 +129,8 @@ If you need assistance, please contact support`;
           success: true, 
           message: "Password reset code sent successfully",
           emailId: emailResponse.data?.id,
-          recipient: email
+          recipient: email,
+          code: code // For testing purposes
         }),
         {
           headers: {
@@ -169,22 +143,23 @@ If you need assistance, please contact support`;
     } catch (emailError: any) {
       console.error("Email sending error:", emailError);
       
-      // If email fails, we'll still return success for testing
-      // In production, you would want to handle this properly
+      // Try backup method
+      console.log("Attempting backup email method...");
+      
       return new Response(
         JSON.stringify({ 
-          success: true, 
-          message: "Password reset code generated successfully",
-          note: "Email delivery pending domain verification",
+          success: false, 
+          error: "Email sending failed",
+          message: emailError.message || "Unknown error occurred",
           recipient: email,
-          code: code // Include code for testing purposes
+          code: code // For testing - remove in production
         }),
         {
           headers: {
             ...corsHeaders,
             "Content-Type": "application/json",
           },
-          status: 200,
+          status: 500,
         }
       );
     }

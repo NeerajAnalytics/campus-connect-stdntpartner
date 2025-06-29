@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
-const resend = new Resend("re_TiDxCjot_hJFzd5tsZFNYFq5V4JhRAcMS");
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 interface ReportData {
   name: string;
@@ -164,7 +164,6 @@ Please respond to the reporter at: ${reportData.email}`;
     console.log("Attempting to send email to:", receiverEmail);
     console.log("From:", reportData.email);
 
-    // Try to send the email
     try {
       const emailResponse = await resend.emails.send({
         from: "CampusConnect Reports <onboarding@resend.dev>",
@@ -179,33 +178,7 @@ Please respond to the reporter at: ${reportData.email}`;
 
       if (emailResponse.error) {
         console.error("Resend API error:", emailResponse.error);
-        
-        // Check if it's a domain verification error
-        if (emailResponse.error.message && emailResponse.error.message.includes("domain")) {
-          console.log("Domain verification issue detected");
-          
-          // For development/testing, we'll still return success but log the issue
-          console.log("Report email would be sent in production with verified domain");
-          
-          return new Response(
-            JSON.stringify({ 
-              success: true, 
-              message: "Report submitted successfully",
-              note: "Email sending simulated due to domain verification requirements",
-              recipient: receiverEmail,
-              reportData: reportData
-            }),
-            {
-              headers: {
-                ...corsHeaders,
-                "Content-Type": "application/json",
-              },
-              status: 200,
-            }
-          );
-        }
-        
-        throw new Error(`Email sending failed: ${emailResponse.error.message}`);
+        throw new Error(`Email sending failed: ${emailResponse.error.message || 'Unknown error'}`);
       }
 
       console.log("Email sent successfully with ID:", emailResponse.data?.id);
@@ -228,13 +201,11 @@ Please respond to the reporter at: ${reportData.email}`;
     } catch (emailError: any) {
       console.error("Email sending error:", emailError);
       
-      // If email fails, we'll still return success for testing
-      // In production, you would want to handle this properly
       return new Response(
         JSON.stringify({ 
-          success: true, 
-          message: "Report submitted successfully",
-          note: "Email delivery pending domain verification",
+          success: false, 
+          error: "Email sending failed",
+          message: emailError.message || "Unknown error occurred",
           recipient: receiverEmail,
           reportData: reportData
         }),
@@ -243,7 +214,7 @@ Please respond to the reporter at: ${reportData.email}`;
             ...corsHeaders,
             "Content-Type": "application/json",
           },
-          status: 200,
+          status: 500,
         }
       );
     }
