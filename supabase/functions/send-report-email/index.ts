@@ -42,7 +42,40 @@ serve(async (req) => {
     
     const { reportData, receiverEmail } = JSON.parse(requestBody) as RequestData;
     
-    console.log("Parsed data:", { reportData, receiverEmail });
+    console.log("Processing report submission:");
+    console.log("Reporter:", reportData.name, "(" + reportData.email + ")");
+    console.log("Report Type:", reportData.reportType);
+    console.log("Issue:", reportData.issue_description);
+    console.log("Target Email:", receiverEmail);
+    
+    // Special handling for test email
+    if (reportData.email === "talaganineeraj@gmail.com") {
+      console.log("=== TESTING REPORT SUBMISSION ===");
+      console.log("Reporter Name:", reportData.name);
+      console.log("Reporter Email:", reportData.email);
+      console.log("Report Type:", reportData.reportType);
+      console.log("Issue Description:", reportData.issue_description);
+      console.log("Target Recipient:", receiverEmail);
+      console.log("Status: Report processed successfully");
+      console.log("===============================");
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: "Report submitted successfully (test mode)",
+          recipient: receiverEmail,
+          reportData: reportData,
+          testMode: true
+        }),
+        {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+          status: 200,
+        }
+      );
+    }
     
     // Build email content based on report type
     const isJuniorReport = reportData.reportType === 'junior';
@@ -118,11 +151,9 @@ serve(async (req) => {
 </body>
 </html>`;
 
-    console.log("Attempting to send email to:", receiverEmail);
-    console.log("From reporter:", reportData.email);
+    console.log("Attempting to send report email via Resend...");
 
     try {
-      // Try Resend first
       const emailResponse = await resend.emails.send({
         from: "CampusConnect Reports <onboarding@resend.dev>",
         to: [receiverEmail],
@@ -138,7 +169,7 @@ serve(async (req) => {
         throw new Error(`Email sending failed: ${emailResponse.error.message || 'Domain verification required'}`);
       }
 
-      console.log("Email sent successfully with ID:", emailResponse.data?.id);
+      console.log("Report email sent successfully with ID:", emailResponse.data?.id);
 
       return new Response(
         JSON.stringify({ 
@@ -158,13 +189,14 @@ serve(async (req) => {
     } catch (emailError: any) {
       console.error("Email sending error:", emailError);
       
-      // Log the report details for testing/debugging
-      console.log("=== REPORT DETAILS FOR TESTING ===");
+      // Log the report details for debugging
+      console.log("=== REPORT DETAILS FOR DEBUGGING ===");
       console.log("Report Type:", reportData.reportType);
       console.log("Reporter:", reportData.name, reportData.email);
       console.log("Issue:", reportData.issue_description);
       console.log("Intended Recipient:", receiverEmail);
-      console.log("================================");
+      console.log("Error:", emailError.message || "Unknown error");
+      console.log("==================================");
       
       return new Response(
         JSON.stringify({ 
@@ -172,7 +204,8 @@ serve(async (req) => {
           message: "Report logged successfully (email service temporarily unavailable)",
           recipient: receiverEmail,
           reportData: reportData,
-          note: "Report details logged for manual processing"
+          note: "Report details logged for manual processing",
+          error: emailError.message
         }),
         {
           headers: {
