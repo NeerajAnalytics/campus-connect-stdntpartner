@@ -25,33 +25,6 @@ serve(async (req) => {
     
     console.log("Processing password reset for email:", email);
     console.log("Generated verification code:", code);
-    
-    // Test with the specific email requested
-    if (email === "talaganineeraj@gmail.com") {
-      console.log("=== TESTING PASSWORD RESET ===");
-      console.log("Email:", email);
-      console.log("Verification Code:", code);
-      console.log("Status: Code generated successfully");
-      console.log("=============================");
-      
-      // Simulate successful email sending for testing
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: "Password reset code sent successfully",
-          recipient: email,
-          code: code,
-          testMode: true
-        }),
-        {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-          status: 200,
-        }
-      );
-    }
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -113,79 +86,51 @@ serve(async (req) => {
 
     console.log("Attempting to send password reset email via Resend...");
 
-    try {
-      const emailResponse = await resend.emails.send({
-        from: "CampusConnect Security <onboarding@resend.dev>",
-        to: [email],
-        subject: `🔐 Your CampusConnect Password Reset Code: ${code}`,
-        html: htmlContent,
-      });
+    const emailResponse = await resend.emails.send({
+      from: "CampusConnect Security <onboarding@resend.dev>",
+      to: [email],
+      subject: `🔐 Your CampusConnect Password Reset Code: ${code}`,
+      html: htmlContent,
+    });
 
-      console.log("Resend API response:", emailResponse);
+    console.log("Resend API response:", emailResponse);
 
-      if (emailResponse.error) {
-        console.error("Resend API error:", emailResponse.error);
-        throw new Error(`Email sending failed: ${emailResponse.error.message || 'Domain verification required'}`);
-      }
-
-      console.log("Password reset email sent successfully with ID:", emailResponse.data?.id);
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: "Password reset code sent successfully",
-          emailId: emailResponse.data?.id,
-          recipient: email
-        }),
-        {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-          status: 200,
-        }
-      );
-    } catch (emailError: any) {
-      console.error("Resend email sending error:", emailError);
-      
-      // Log the code for testing purposes
-      console.log("=== PASSWORD RESET CODE FOR DEBUGGING ===");
-      console.log("Email:", email);
-      console.log("Verification Code:", code);
-      console.log("Error:", emailError.message || "Unknown error");
-      console.log("======================================");
-      
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: "Password reset code generated (check console for testing)",
-          recipient: email,
-          code: code,
-          note: "Email service temporarily unavailable - code logged for testing",
-          error: emailError.message
-        }),
-        {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-          status: 200,
-        }
-      );
+    if (emailResponse.error) {
+      console.error("Resend API error:", emailResponse.error);
+      throw new Error(`Email sending failed: ${emailResponse.error.message}`);
     }
-  } catch (error) {
-    console.error("Error in password reset function:", error);
+
+    console.log("Password reset email sent successfully with ID:", emailResponse.data?.id);
+
     return new Response(
-      JSON.stringify({
-        error: error.message || "Failed to process password reset request",
-        details: error.stack || "No additional details available"
+      JSON.stringify({ 
+        success: true, 
+        message: "Password reset code sent successfully",
+        emailId: emailResponse.data?.id,
+        recipient: email
       }),
       {
         headers: {
           ...corsHeaders,
           "Content-Type": "application/json",
         },
-        status: 500,
+        status: 200,
+      }
+    );
+  } catch (error) {
+    console.error("Error in password reset function:", error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message || "Failed to send password reset code",
+        details: "Please check your email address and try again"
+      }),
+      {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
+        status: 400,
       }
     );
   }

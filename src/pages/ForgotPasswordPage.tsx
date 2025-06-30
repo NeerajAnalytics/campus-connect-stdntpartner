@@ -42,6 +42,11 @@ const ForgotPasswordPage: React.FC = () => {
         throw new Error(`Failed to send email: ${emailError.message}`);
       }
 
+      // Check if the response indicates success or failure
+      if (emailData && emailData.success === false) {
+        throw new Error(emailData.error || "Failed to send verification code");
+      }
+
       console.log("Password reset email sent successfully:", emailData);
       
       toast({
@@ -55,7 +60,7 @@ const ForgotPasswordPage: React.FC = () => {
       console.error("Password reset error:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to send verification code",
+        description: error.message || "Failed to send verification code. Please try again.",
         variant: "destructive",
       });
     } finally {

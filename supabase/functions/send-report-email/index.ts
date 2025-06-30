@@ -48,35 +48,6 @@ serve(async (req) => {
     console.log("Issue:", reportData.issue_description);
     console.log("Target Email:", receiverEmail);
     
-    // Special handling for test email
-    if (reportData.email === "talaganineeraj@gmail.com") {
-      console.log("=== TESTING REPORT SUBMISSION ===");
-      console.log("Reporter Name:", reportData.name);
-      console.log("Reporter Email:", reportData.email);
-      console.log("Report Type:", reportData.reportType);
-      console.log("Issue Description:", reportData.issue_description);
-      console.log("Target Recipient:", receiverEmail);
-      console.log("Status: Report processed successfully");
-      console.log("===============================");
-      
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: "Report submitted successfully (test mode)",
-          recipient: receiverEmail,
-          reportData: reportData,
-          testMode: true
-        }),
-        {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-          status: 200,
-        }
-      );
-    }
-    
     // Build email content based on report type
     const isJuniorReport = reportData.reportType === 'junior';
     const reportTitle = isJuniorReport ? 'Junior Report Submission' : 'Senior Report Submission';
@@ -153,82 +124,52 @@ serve(async (req) => {
 
     console.log("Attempting to send report email via Resend...");
 
-    try {
-      const emailResponse = await resend.emails.send({
-        from: "CampusConnect Reports <onboarding@resend.dev>",
-        to: [receiverEmail],
-        reply_to: [reportData.email],
-        subject: `🚨 ${reportTitle} from ${reportData.name}`,
-        html: emailContent,
-      });
+    const emailResponse = await resend.emails.send({
+      from: "CampusConnect Reports <onboarding@resend.dev>",
+      to: [receiverEmail],
+      reply_to: [reportData.email],
+      subject: `🚨 ${reportTitle} from ${reportData.name}`,
+      html: emailContent,
+    });
 
-      console.log("Resend API response:", emailResponse);
+    console.log("Resend API response:", emailResponse);
 
-      if (emailResponse.error) {
-        console.error("Resend API error:", emailResponse.error);
-        throw new Error(`Email sending failed: ${emailResponse.error.message || 'Domain verification required'}`);
-      }
-
-      console.log("Report email sent successfully with ID:", emailResponse.data?.id);
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: "Report email sent successfully",
-          emailId: emailResponse.data?.id,
-          recipient: receiverEmail
-        }),
-        {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-          status: 200,
-        }
-      );
-    } catch (emailError: any) {
-      console.error("Email sending error:", emailError);
-      
-      // Log the report details for debugging
-      console.log("=== REPORT DETAILS FOR DEBUGGING ===");
-      console.log("Report Type:", reportData.reportType);
-      console.log("Reporter:", reportData.name, reportData.email);
-      console.log("Issue:", reportData.issue_description);
-      console.log("Intended Recipient:", receiverEmail);
-      console.log("Error:", emailError.message || "Unknown error");
-      console.log("==================================");
-      
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: "Report logged successfully (email service temporarily unavailable)",
-          recipient: receiverEmail,
-          reportData: reportData,
-          note: "Report details logged for manual processing",
-          error: emailError.message
-        }),
-        {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-          status: 200,
-        }
-      );
+    if (emailResponse.error) {
+      console.error("Resend API error:", emailResponse.error);
+      throw new Error(`Email sending failed: ${emailResponse.error.message}`);
     }
-  } catch (error) {
-    console.error("Error in send-report-email function:", error);
+
+    console.log("Report email sent successfully with ID:", emailResponse.data?.id);
+
     return new Response(
-      JSON.stringify({
-        error: error.message || "Failed to send report email",
-        details: error.stack || "No additional details available"
+      JSON.stringify({ 
+        success: true, 
+        message: "Report email sent successfully",
+        emailId: emailResponse.data?.id,
+        recipient: receiverEmail
       }),
       {
         headers: {
           ...corsHeaders,
           "Content-Type": "application/json",
         },
-        status: 500,
+        status: 200,
+      }
+    );
+  } catch (error: any) {
+    console.error("Error in send-report-email function:", error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message || "Failed to send report email",
+        details: "Please check the recipient email address and try again"
+      }),
+      {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
+        status: 400,
       }
     );
   }
