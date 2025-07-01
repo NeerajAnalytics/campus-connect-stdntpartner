@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
@@ -24,12 +23,6 @@ const SeniorTermsPage: React.FC = () => {
             <div className="flex items-center gap-8">
               <Link to="/senior-home" className="text-gray-700 hover:text-gray-900">
                 Home
-              </Link>
-              <Link to="/accommodation" className="text-gray-700 hover:text-gray-900">
-                Accommodation
-              </Link>
-              <Link to="/report" className="text-gray-700 hover:text-gray-900">
-                Report
               </Link>
               <Link to="/senior-profile" className="text-gray-700 hover:text-gray-900">
                 Profile

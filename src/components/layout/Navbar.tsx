@@ -18,9 +18,6 @@ const Navbar: React.FC = () => {
             <Link to="/auth" className="text-gray-700 hover:text-gray-900">
               Connect With Senior
             </Link>
-            <Link to="/auth" className="text-gray-700 hover:text-gray-900">
-              Accommodation
-            </Link>
             <Link
               to="/auth"
               className="bg-[#7d9bd2] text-white px-6 py-2 rounded-full hover:bg-[#6b89c0] transition-colors"

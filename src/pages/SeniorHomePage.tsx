@@ -25,9 +25,6 @@ const SeniorHomePage: React.FC = () => {
               <Link to="/senior-home" className="text-gray-700 hover:text-gray-900">
                 Home
               </Link>
-              <Link to="/accommodation" className="text-gray-700 hover:text-gray-900">
-                Accommodation
-              </Link>
               <Link to="/senior-profile" className="text-gray-700 hover:text-gray-900">
                 Profile
               </Link>

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,9 +27,6 @@ const JuniorHomePage: React.FC = () => {
               </Link>
               <Link to="/connect-with-senior" className="text-gray-700 hover:text-gray-900">
                 Connect With Senior
-              </Link>
-              <Link to="/accommodation" className="text-gray-700 hover:text-gray-900">
-                Accommodation
               </Link>
               <Link to="/junior-profile" className="text-gray-700 hover:text-gray-900">
                 Profile
