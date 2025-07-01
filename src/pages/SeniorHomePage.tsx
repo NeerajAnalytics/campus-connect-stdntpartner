@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,9 +27,6 @@ const SeniorHomePage: React.FC = () => {
               </Link>
               <Link to="/accommodation" className="text-gray-700 hover:text-gray-900">
                 Accommodation
-              </Link>
-              <Link to="/report" className="text-gray-700 hover:text-gray-900">
-                Report
               </Link>
               <Link to="/senior-profile" className="text-gray-700 hover:text-gray-900">
                 Profile
