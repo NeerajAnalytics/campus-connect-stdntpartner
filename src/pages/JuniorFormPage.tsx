@@ -14,7 +14,7 @@ const JuniorFormPage: React.FC = () => {
           
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <iframe
-              src="https://docs.google.com/forms/d/e/1FAIpQLSfxvKmY8xJqGqQZxQqQzQqQzQqQzQqQzQqQzQqQzQqQzQqQzA/viewform?embedded=true"
+              src="https://docs.google.com/forms/d/e/1FAIpQLSfoTge0of1wrZTTbVaoc2CTh7uqQSv3q3-LALT-wUriftj_QA/viewform?embedded=true"
               width="100%"
               height="800"
               frameBorder="0"
