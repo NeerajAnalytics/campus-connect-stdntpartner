@@ -11,7 +11,7 @@ const ProfileActions: React.FC = () => {
       <Button
         variant="secondary"
         className="bg-[#7d9bd2] text-black hover:bg-[#6b89c0] rounded-md"
-        onClick={() => navigate('/junior-report')}
+        onClick={() => navigate('/junior-form')}
       >
         Report an Issue
       </Button>
