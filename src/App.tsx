@@ -13,7 +13,6 @@ import JuniorLoginPage from "./pages/JuniorLoginPage";
 import JuniorHomePage from "./pages/JuniorHomePage";
 import JuniorProfilePage from "./pages/JuniorProfilePage";
 import JuniorEditPage from "./pages/JuniorEditPage";
-import JuniorFormPage from "./pages/JuniorFormPage";
 import JuniorFAQPage from "./pages/JuniorFAQPage";
 import JuniorTermsPage from "./pages/JuniorTermsPage";
 import SeniorSignupPage from "./pages/SeniorSignupPage";
@@ -21,7 +20,6 @@ import SeniorLoginPage from "./pages/SeniorLoginPage";
 import SeniorHomePage from "./pages/SeniorHomePage";
 import SeniorProfilePage from "./pages/SeniorProfilePage";
 import SeniorEditPage from "./pages/SeniorEditPage";
-import SeniorFormPage from "./pages/SeniorFormPage";
 import SeniorFAQPage from "./pages/SeniorFAQPage";
 import SeniorTermsPage from "./pages/SeniorTermsPage";
 import SeniorForgotPasswordPage from "./pages/SeniorForgotPasswordPage";
@@ -61,7 +59,6 @@ function App() {
                   <Route path="/junior-home" element={<JuniorHomePage />} />
                   <Route path="/junior-profile" element={<JuniorProfilePage />} />
                   <Route path="/junior-edit" element={<JuniorEditPage />} />
-                  <Route path="/junior-form" element={<JuniorFormPage />} />
                   <Route path="/junior-faq" element={<JuniorFAQPage />} />
                   <Route path="/junior-terms" element={<JuniorTermsPage />} />
                   <Route path="/senior-signup" element={<SeniorSignupPage />} />
@@ -69,7 +66,6 @@ function App() {
                   <Route path="/senior-home" element={<SeniorHomePage />} />
                   <Route path="/senior-profile" element={<SeniorProfilePage />} />
                   <Route path="/senior-edit" element={<SeniorEditPage />} />
-                  <Route path="/senior-form" element={<SeniorFormPage />} />
                   <Route path="/senior-faq" element={<SeniorFAQPage />} />
                   <Route path="/senior-terms" element={<SeniorTermsPage />} />
                   <Route path="/senior-forgot-password" element={<SeniorForgotPasswordPage />} />
