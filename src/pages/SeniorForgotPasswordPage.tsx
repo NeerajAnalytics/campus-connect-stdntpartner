@@ -25,6 +25,9 @@ const SeniorForgotPasswordPage: React.FC = () => {
 
     setIsLoading(true);
     try {
+      // Clean up email - trim spaces and convert to lowercase
+      const cleanEmail = email.trim().toLowerCase();
+      
       // Generate a 6-digit code for verification
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
       
@@ -32,17 +35,17 @@ const SeniorForgotPasswordPage: React.FC = () => {
       const codeData = {
         code: verificationCode,
         timestamp: Date.now(),
-        email: email
+        email: cleanEmail
       };
-      sessionStorage.setItem(`vcode_${email}`, JSON.stringify(codeData));
+      sessionStorage.setItem(`vcode_${cleanEmail}`, JSON.stringify(codeData));
       
-      console.log("Sending verification code to:", email);
+      console.log("Sending verification code to:", cleanEmail);
       console.log("Generated code:", verificationCode);
       
       // Send the code via email using our edge function
       const { data: emailData, error: emailError } = await supabase.functions.invoke('send-password-reset', {
         body: { 
-          email,
+          email: cleanEmail,
           code: verificationCode
         }
       });
@@ -65,16 +68,16 @@ const SeniorForgotPasswordPage: React.FC = () => {
         description: "Please check your email for the 6-digit verification code.",
       });
       
-      // Navigate to the verification code page
-      navigate(`/senior-verification-code?email=${encodeURIComponent(email)}`);
+      // Navigate to the verification code page with cleaned email
+      navigate(`/senior-verification-code?email=${encodeURIComponent(cleanEmail)}`);
     } catch (error: any) {
       console.error("Password reset error:", error);
       
       // More specific error messages
       let errorMessage = "Failed to send verification code. Please try again.";
       
-      if (error.message.includes("No account found")) {
-        errorMessage = "No account found with this email address. Please check your email or sign up for a new account.";
+      if (error.message.includes("Email ID is not registered")) {
+        errorMessage = "Email ID is not registered. Please signup first.";
       } else if (error.message.includes("RESEND_API_KEY")) {
         errorMessage = "Email service configuration error. Please contact support.";
       } else if (error.message.includes("network") || error.message.includes("fetch")) {

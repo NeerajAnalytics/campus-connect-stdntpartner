@@ -19,7 +19,9 @@ const JuniorLoginPage: React.FC = () => {
     setIsLoading(true);
     
     try {
-      await signIn(email, password);
+      // Clean up email - trim spaces and convert to lowercase
+      const cleanEmail = email.trim().toLowerCase();
+      await signIn(cleanEmail, password);
       // The navigation happens in the signIn function after successful login
     } catch (error: any) {
       toast({
@@ -42,7 +44,7 @@ const JuniorLoginPage: React.FC = () => {
           <Link to="/" className="text-[#5c7bb5] text-2xl font-semibold">
             CampusConnect
           </Link>
-          <div className="w-[50px]"></div> {/* Empty div for alignment */}
+          <div className="w-[50px]"></div>
         </div>
       </header>
 

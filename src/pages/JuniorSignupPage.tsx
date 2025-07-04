@@ -41,7 +41,9 @@ const JuniorSignupPage: React.FC = () => {
     setIsLoading(true);
     
     try {
-      await signUp(email, password, name, gender);
+      // Clean up email - trim spaces and convert to lowercase
+      const cleanEmail = email.trim().toLowerCase();
+      await signUp(cleanEmail, password, name, gender);
     } finally {
       setIsLoading(false);
     }
@@ -57,7 +59,7 @@ const JuniorSignupPage: React.FC = () => {
           <Link to="/" className="text-[#5c7bb5] text-2xl font-semibold">
             CampusConnect
           </Link>
-          <div className="w-[50px]"></div> {/* Empty div for alignment */}
+          <div className="w-[50px]"></div>
         </div>
       </header>
 

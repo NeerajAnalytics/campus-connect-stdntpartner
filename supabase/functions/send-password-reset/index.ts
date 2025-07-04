@@ -32,24 +32,40 @@ serve(async (req) => {
       throw new Error('Email and code are required');
     }
 
-    console.log("Processing password reset for email:", email);
+    // Clean up email - trim spaces and convert to lowercase
+    const cleanEmail = email.trim().toLowerCase();
+    console.log("Processing password reset for email:", cleanEmail);
 
-    // Initialize Supabase client to check if user exists
+    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check if user exists in auth.users
-    const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(email);
-    
-    if (authError) {
-      console.error("Error checking user:", authError);
-      throw new Error('Failed to validate user');
-    }
+    // Check if email exists in profiles table (for juniors)
+    const { data: juniorProfile, error: juniorError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', cleanEmail)
+      .single();
 
-    if (!authUser || !authUser.user) {
-      console.log("User not found for email:", email);
-      throw new Error('No account found with this email address. Please check your email or sign up for a new account.');
+    // Check if email exists in senior_profiles table (for seniors)  
+    const { data: seniorProfile, error: seniorError } = await supabase
+      .from('senior_profiles')
+      .select('id, email')
+      .eq('email', cleanEmail)
+      .single();
+
+    // Also check auth.users table
+    const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(cleanEmail);
+
+    console.log("Junior profile check:", { juniorProfile, juniorError });
+    console.log("Senior profile check:", { seniorProfile, seniorError });
+    console.log("Auth user check:", { authUser: authUser?.user?.email, authError });
+
+    // If user doesn't exist anywhere, return error
+    if (!authUser?.user && !juniorProfile && !seniorProfile) {
+      console.log("Email not found in any table:", cleanEmail);
+      throw new Error('Email ID is not registered. Please signup first.');
     }
 
     console.log("User found, proceeding to send verification code");
@@ -120,7 +136,7 @@ serve(async (req) => {
 
     const emailResponse = await resend.emails.send({
       from: "CampusConnect Security <onboarding@resend.dev>",
-      to: [email],
+      to: [cleanEmail],
       subject: `🔐 Your CampusConnect Password Reset Code: ${code}`,
       html: htmlContent,
     });
@@ -139,7 +155,7 @@ serve(async (req) => {
         success: true, 
         message: "Password reset code sent successfully",
         emailId: emailResponse.data?.id,
-        recipient: email
+        recipient: cleanEmail
       }),
       {
         headers: {
