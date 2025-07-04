@@ -73,7 +73,9 @@ const SeniorForgotPasswordPage: React.FC = () => {
       // More specific error messages
       let errorMessage = "Failed to send verification code. Please try again.";
       
-      if (error.message.includes("RESEND_API_KEY")) {
+      if (error.message.includes("No account found")) {
+        errorMessage = "No account found with this email address. Please check your email or sign up for a new account.";
+      } else if (error.message.includes("RESEND_API_KEY")) {
         errorMessage = "Email service configuration error. Please contact support.";
       } else if (error.message.includes("network") || error.message.includes("fetch")) {
         errorMessage = "Network error. Please check your connection and try again.";
@@ -110,7 +112,7 @@ const SeniorForgotPasswordPage: React.FC = () => {
           <div className="text-center">
             <h1 className="text-2xl font-semibold text-gray-900">Forgot Password</h1>
             <p className="mt-2 text-sm text-gray-600">
-              Enter your email to receive a verification code
+              Enter your registered email to receive a verification code
             </p>
           </div>
 
@@ -125,7 +127,7 @@ const SeniorForgotPasswordPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full border border-gray-300 rounded h-12"
-                placeholder="Enter your email"
+                placeholder="Enter your registered email"
                 required
                 disabled={isLoading}
               />

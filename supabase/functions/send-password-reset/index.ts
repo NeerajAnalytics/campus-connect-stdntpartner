@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 import { Resend } from "npm:resend@2.0.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
@@ -32,7 +33,26 @@ serve(async (req) => {
     }
 
     console.log("Processing password reset for email:", email);
-    console.log("Generated verification code:", code);
+
+    // Initialize Supabase client to check if user exists
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Check if user exists in auth.users
+    const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(email);
+    
+    if (authError) {
+      console.error("Error checking user:", authError);
+      throw new Error('Failed to validate user');
+    }
+
+    if (!authUser || !authUser.user) {
+      console.log("User not found for email:", email);
+      throw new Error('No account found with this email address. Please check your email or sign up for a new account.');
+    }
+
+    console.log("User found, proceeding to send verification code");
 
     // Check if RESEND_API_KEY is available
     const apiKey = Deno.env.get("RESEND_API_KEY");
@@ -147,7 +167,7 @@ serve(async (req) => {
           ...corsHeaders,
           "Content-Type": "application/json",
         },
-        status: 500,
+        status: 400,
       }
     );
   }
