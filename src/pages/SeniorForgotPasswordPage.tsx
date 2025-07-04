@@ -27,7 +27,17 @@ const SeniorForgotPasswordPage: React.FC = () => {
     try {
       // Generate a 6-digit code for verification
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-      sessionStorage.setItem(`vcode_${email}`, verificationCode);
+      
+      // Store code with timestamp for expiration
+      const codeData = {
+        code: verificationCode,
+        timestamp: Date.now(),
+        email: email
+      };
+      sessionStorage.setItem(`vcode_${email}`, JSON.stringify(codeData));
+      
+      console.log("Sending verification code to:", email);
+      console.log("Generated code:", verificationCode);
       
       // Send the code via email using our edge function
       const { data: emailData, error: emailError } = await supabase.functions.invoke('send-password-reset', {
@@ -37,13 +47,19 @@ const SeniorForgotPasswordPage: React.FC = () => {
         }
       });
 
+      console.log("Email function response:", emailData);
+      console.log("Email function error:", emailError);
+
       if (emailError) {
         console.error("Email sending error:", emailError);
         throw new Error(`Failed to send email: ${emailError.message}`);
       }
 
-      console.log("Password reset email sent successfully:", emailData);
-      
+      // Check if the response indicates success or failure
+      if (emailData && emailData.success === false) {
+        throw new Error(emailData.error || "Failed to send verification code");
+      }
+
       toast({
         title: "Verification code sent",
         description: "Please check your email for the 6-digit verification code.",
@@ -53,9 +69,21 @@ const SeniorForgotPasswordPage: React.FC = () => {
       navigate(`/senior-verification-code?email=${encodeURIComponent(email)}`);
     } catch (error: any) {
       console.error("Password reset error:", error);
+      
+      // More specific error messages
+      let errorMessage = "Failed to send verification code. Please try again.";
+      
+      if (error.message.includes("RESEND_API_KEY")) {
+        errorMessage = "Email service configuration error. Please contact support.";
+      } else if (error.message.includes("network") || error.message.includes("fetch")) {
+        errorMessage = "Network error. Please check your connection and try again.";
+      } else if (error.message.includes("invalid") || error.message.includes("email")) {
+        errorMessage = "Please enter a valid email address.";
+      }
+      
       toast({
         title: "Error",
-        description: error.message || "Failed to send verification code",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

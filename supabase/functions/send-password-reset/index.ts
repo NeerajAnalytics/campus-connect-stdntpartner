@@ -21,19 +21,32 @@ serve(async (req) => {
     const requestBody = await req.text();
     console.log("Request body received:", requestBody);
     
+    if (!requestBody || requestBody.trim() === '') {
+      throw new Error('Request body is empty');
+    }
+
     const { email, code }: PasswordResetRequest = JSON.parse(requestBody);
     
+    if (!email || !code) {
+      throw new Error('Email and code are required');
+    }
+
     console.log("Processing password reset for email:", email);
     console.log("Generated verification code:", code);
+
+    // Check if RESEND_API_KEY is available
+    const apiKey = Deno.env.get("RESEND_API_KEY");
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY is not configured');
+    }
 
     const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #5c7bb5; color: white; padding: 20px; text-align: center; }
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; }
+        .header { background-color: #5c7bb5; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
         .content { padding: 30px; background-color: #f9f9f9; }
         .code-box { 
             background-color: #e8f4f8; 
@@ -50,36 +63,35 @@ serve(async (req) => {
             letter-spacing: 4px; 
             font-family: monospace; 
         }
-        .footer { text-align: center; color: #666; padding: 20px; font-size: 14px; }
+        .footer { text-align: center; color: #666; padding: 20px; font-size: 14px; border-radius: 0 0 8px 8px; }
         .warning { color: #d32f2f; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Password Reset Code</h1>
-            <p>CampusConnect Security</p>
+    <div class="header">
+        <h1>Password Reset Code</h1>
+        <p>CampusConnect Security</p>
+    </div>
+    
+    <div class="content">
+        <h2>Hello!</h2>
+        <p>You requested to reset your password for your CampusConnect account.</p>
+        
+        <div class="code-box">
+            <p>Your 6-digit verification code is:</p>
+            <div class="code">${code}</div>
         </div>
         
-        <div class="content">
-            <h2>Hello!</h2>
-            <p>You requested to reset your password for your CampusConnect account.</p>
-            
-            <div class="code-box">
-                <p>Your 6-digit verification code is:</p>
-                <div class="code">${code}</div>
-            </div>
-            
-            <p>Please enter this code in the verification page to proceed with resetting your password.</p>
-            
-            <p class="warning">⚠️ This code will expire in 10 minutes for security reasons.</p>
-            
-            <p>If you didn't request this password reset, please ignore this email and your password will remain unchanged.</p>
-        </div>
+        <p>Please enter this code in the verification page to proceed with resetting your password.</p>
         
-        <div class="footer">
-            <p>This is an automated email from CampusConnect</p>
-        </div>
+        <p class="warning">⚠️ This code will expire in 10 minutes for security reasons.</p>
+        
+        <p>If you didn't request this password reset, please ignore this email and your password will remain unchanged.</p>
+    </div>
+    
+    <div class="footer">
+        <p>This is an automated email from CampusConnect</p>
+        <p>Need help? Contact our support team</p>
     </div>
 </body>
 </html>`;
@@ -97,7 +109,7 @@ serve(async (req) => {
 
     if (emailResponse.error) {
       console.error("Resend API error:", emailResponse.error);
-      throw new Error(`Email sending failed: ${emailResponse.error.message}`);
+      throw new Error(`Email sending failed: ${JSON.stringify(emailResponse.error)}`);
     }
 
     console.log("Password reset email sent successfully with ID:", emailResponse.data?.id);
@@ -119,18 +131,23 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Error in password reset function:", error);
+    
+    // More detailed error response
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || "Failed to send password reset code",
-        details: "Please check your email address and try again"
+        error: errorMessage,
+        details: "Please check your email address and try again. If the problem persists, contact support.",
+        timestamp: new Date().toISOString()
       }),
       {
         headers: {
           ...corsHeaders,
           "Content-Type": "application/json",
         },
-        status: 400,
+        status: 500,
       }
     );
   }
