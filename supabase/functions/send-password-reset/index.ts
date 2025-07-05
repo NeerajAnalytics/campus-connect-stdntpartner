@@ -41,31 +41,50 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check if email exists in profiles table (for juniors)
+    // First check if user exists in auth.users table
+    const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(cleanEmail);
+    
+    console.log("Auth user check:", { 
+      email: authUser?.user?.email, 
+      id: authUser?.user?.id,
+      error: authError?.message 
+    });
+
+    // If user doesn't exist in auth.users, they're not registered
+    if (!authUser?.user) {
+      console.log("Email not found in auth.users:", cleanEmail);
+      throw new Error('Email ID is not registered. Please signup first.');
+    }
+
+    const userId = authUser.user.id;
+
+    // Check if this is a junior user (exists in profiles table)
     const { data: juniorProfile, error: juniorError } = await supabase
       .from('profiles')
       .select('id')
-      .eq('id', cleanEmail)
-      .single();
+      .eq('id', userId)
+      .maybeSingle();
 
-    // Check if email exists in senior_profiles table (for seniors)  
+    // Check if this is a senior user (exists in senior_profiles table)  
     const { data: seniorProfile, error: seniorError } = await supabase
       .from('senior_profiles')
       .select('id, email')
-      .eq('email', cleanEmail)
-      .single();
+      .eq('id', userId)
+      .maybeSingle();
 
-    // Also check auth.users table
-    const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(cleanEmail);
+    console.log("Junior profile check:", { 
+      found: !!juniorProfile, 
+      error: juniorError?.message 
+    });
+    console.log("Senior profile check:", { 
+      found: !!seniorProfile, 
+      error: seniorError?.message 
+    });
 
-    console.log("Junior profile check:", { juniorProfile, juniorError });
-    console.log("Senior profile check:", { seniorProfile, seniorError });
-    console.log("Auth user check:", { authUser: authUser?.user?.email, authError });
-
-    // If user doesn't exist anywhere, return error
-    if (!authUser?.user && !juniorProfile && !seniorProfile) {
-      console.log("Email not found in any table:", cleanEmail);
-      throw new Error('Email ID is not registered. Please signup first.');
+    // User exists in auth but should also exist in either profiles or senior_profiles
+    if (!juniorProfile && !seniorProfile) {
+      console.log("User exists in auth but no profile found:", cleanEmail);
+      // Still allow password reset as they have an auth account
     }
 
     console.log("User found, proceeding to send verification code");
