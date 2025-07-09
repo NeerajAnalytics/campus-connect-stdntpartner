@@ -28,9 +28,12 @@ export const signUpUser = async (
     userData.phone = phone;
     userData.region = region;
     console.log("Senior signup data:", userData);
+  } else {
+    // For juniors, include phone in metadata
+    userData.phone = phone;
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { error, data } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -42,6 +45,46 @@ export const signUpUser = async (
   if (error) {
     console.error("Signup error:", error);
     throw error;
+  }
+
+  // Create profile based on user type
+  if (data.user) {
+    if (collegeId || rollNo) {
+      // Create senior profile
+      const { error: profileError } = await supabase
+        .from('senior_profiles')
+        .insert({
+          id: data.user.id,
+          name,
+          gender,
+          email,
+          phone,
+          college_id: collegeId,
+          roll_no: rollNo,
+          region,
+        });
+
+      if (profileError) {
+        console.error('Error creating senior profile:', profileError);
+        throw new Error('Failed to create senior profile: ' + profileError.message);
+      }
+    } else {
+      // Create junior profile
+      const { error: profileError } = await supabase
+        .from('junior_profile')
+        .insert({
+          id: data.user.id,
+          name,
+          gender,
+          email,
+          phone,
+        });
+
+      if (profileError) {
+        console.error('Error creating junior profile:', profileError);
+        throw new Error('Failed to create junior profile: ' + profileError.message);
+      }
+    }
   }
 
   toast({

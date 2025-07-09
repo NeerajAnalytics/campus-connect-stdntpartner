@@ -1,10 +1,10 @@
 
 import React from "react";
-import { Profile } from "@/types/database";
+import { JuniorProfile } from "@/types/database";
 import { User } from "@supabase/supabase-js";
 
 interface ProfileInfoProps {
-  profile: Profile | null;
+  profile: JuniorProfile | null;
   user: User | null;
 }
 

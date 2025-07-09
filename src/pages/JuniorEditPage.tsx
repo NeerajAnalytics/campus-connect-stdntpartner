@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { getProfiles } from "@/integrations/supabase/client";
+import { getJuniorProfiles } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
 import ProfileHeader from "@/components/profile/ProfileHeader";
@@ -28,7 +28,7 @@ const JuniorEditPage: React.FC = () => {
       setLoading(true);
       if (!user) return;
 
-      const { data, error } = await getProfiles()
+      const { data, error } = await getJuniorProfiles()
         .select('*')
         .eq('id', user.id)
         .maybeSingle();

@@ -68,10 +68,10 @@ serve(async (req) => {
       });
 
       if (authUser?.user) {
-        // Check if this user exists in profiles table (junior)
+        // Check if this user exists in junior_profile table (junior)
         const { data: juniorProfile, error: juniorError } = await supabase
-          .from('profiles')
-          .select('id')
+          .from('junior_profile')
+          .select('id, email')
           .eq('id', authUser.user.id)
           .maybeSingle();
 

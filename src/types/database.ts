@@ -1,9 +1,11 @@
 
 // Define our own database types that work with the existing Supabase client
-export interface Profile {
+export interface JuniorProfile {
   id: string;
   name: string | null;
   gender: string | null;
+  email: string | null;
+  phone: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -23,6 +25,6 @@ export interface SeniorProfile {
 
 // Add table type definitions for type-safe database access
 export interface Tables {
-  profiles: Profile;
+  junior_profile: JuniorProfile;
   senior_profiles: SeniorProfile;
 }

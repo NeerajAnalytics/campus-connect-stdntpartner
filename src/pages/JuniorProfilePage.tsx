@@ -1,16 +1,16 @@
 
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase, getProfiles } from "@/integrations/supabase/client";
+import { supabase, getJuniorProfiles } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
-import { Profile } from "@/types/database";
+import { JuniorProfile } from "@/types/database";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileFooter from "@/components/profile/ProfileFooter";
 import ProfileContent from "@/components/profile/ProfileContent";
 
 const JuniorProfilePage: React.FC = () => {
   const { user, signOut } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<JuniorProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,7 +24,7 @@ const JuniorProfilePage: React.FC = () => {
       setLoading(true);
       if (!user) return;
 
-      const { data, error } = await getProfiles()
+      const { data, error } = await getJuniorProfiles()
         .select('*')
         .eq('id', user.id)
         .maybeSingle();
@@ -35,7 +35,7 @@ const JuniorProfilePage: React.FC = () => {
       
       // If profile exists in database, use it
       if (data) {
-        setProfile(data as Profile);
+        setProfile(data as JuniorProfile);
       } else {
         // Otherwise create a new profile using user metadata
         const userData = user.user_metadata;
@@ -45,16 +45,18 @@ const JuniorProfilePage: React.FC = () => {
           id: user.id,
           name: userData?.name || null,
           gender: userData?.gender || null,
+          email: userData?.email || null,
+          phone: userData?.phone || null,
         };
         
         // Insert the new profile
-        const { error: insertError } = await getProfiles()
+        const { error: insertError } = await getJuniorProfiles()
           .insert([newProfile]);  // Pass as array to fix TypeScript error
           
         if (insertError) throw insertError;
         
         // Set the new profile for immediate display
-        setProfile(newProfile as Profile);
+        setProfile(newProfile as JuniorProfile);
       }
     } catch (error: any) {
       console.error("Profile fetch error:", error);

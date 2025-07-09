@@ -1,6 +1,6 @@
 
-import { supabase, getProfiles, getSeniorProfiles } from "@/integrations/supabase/client";
-import { Profile } from "@/types/database";
+import { supabase } from "@/integrations/supabase/client";
+import { JuniorProfile } from "@/types/database";
 
 export const createProfileIfNotExists = async (userId: string, userMetadata: any) => {
   try {
@@ -8,7 +8,8 @@ export const createProfileIfNotExists = async (userId: string, userMetadata: any
     console.log("User metadata:", userMetadata);
     
     // Check if regular profile exists
-    const { data: existingProfile, error: fetchError } = await getProfiles()
+    const { data: existingProfile, error: fetchError } = await supabase
+      .from('junior_profile')
       .select()
       .eq('id', userId)
       .maybeSingle();
@@ -21,7 +22,8 @@ export const createProfileIfNotExists = async (userId: string, userMetadata: any
     if (isSenior) {
       console.log("Creating senior profile...");
       // Check if senior profile exists
-      const { data: existingSeniorProfile, error: seniorFetchError } = await getSeniorProfiles()
+      const { data: existingSeniorProfile, error: seniorFetchError } = await supabase
+        .from('senior_profiles')
         .select()
         .eq('id', userId)
         .maybeSingle();
@@ -43,7 +45,7 @@ export const createProfileIfNotExists = async (userId: string, userMetadata: any
         
         console.log("Inserting senior profile data:", seniorData);
         
-        const { error: insertError } = await getSeniorProfiles().insert(seniorData);
+        const { error: insertError } = await supabase.from('senior_profiles').insert(seniorData);
         
         if (insertError) {
           console.error("Error inserting senior profile:", insertError);
@@ -62,11 +64,13 @@ export const createProfileIfNotExists = async (userId: string, userMetadata: any
           id: userId,
           name: userMetadata?.name || null,
           gender: userMetadata?.gender || null,
+          email: userMetadata?.email || null,
+          phone: userMetadata?.phone || null,
         };
         
         console.log("Inserting profile data:", profileData);
         
-        const { error: insertError } = await getProfiles().insert(profileData);
+        const { error: insertError } = await supabase.from('junior_profile').insert(profileData);
         
         if (insertError) {
           console.error("Error inserting profile:", insertError);
@@ -83,16 +87,33 @@ export const createProfileIfNotExists = async (userId: string, userMetadata: any
   }
 };
 
-export const updateUserProfile = async (userId: string, data: {name?: string; gender?: string}) => {
-  const updateData: Partial<Profile> = {};
-  if (data.name) updateData.name = data.name;
-  if (data.gender) updateData.gender = data.gender;
+export const fetchUserProfile = async (userId: string) => {
+  const { data, error } = await supabase
+    .from('junior_profile')
+    .select('*')
+    .eq('id', userId)
+    .single();
 
-  const { error } = await getProfiles()
-    .update(updateData)
-    .eq('id', userId);
+  if (error && error.code !== 'PGRST116') {
+    throw error;
+  }
 
-  if (error) throw error;
+  return data;
+};
+
+export const updateUserProfile = async (userId: string, profileData: { name?: string; gender?: string; email?: string; phone?: string }) => {
+  const { data, error } = await supabase
+    .from('junior_profile')
+    .update(profileData)
+    .eq('id', userId)
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
 };
 
 export const updateSeniorProfile = async (userId: string, data: {
@@ -114,7 +135,8 @@ export const updateSeniorProfile = async (userId: string, data: {
   if (data.email !== undefined) updateData.email = data.email;
   if (data.region !== undefined) updateData.region = data.region;
 
-  const { error } = await getSeniorProfiles()
+  const { error } = await supabase
+    .from('senior_profiles')
     .update(updateData)
     .eq('id', userId);
 

@@ -1,13 +1,13 @@
 
 import React from "react";
-import { Profile } from "@/types/database";
+import { JuniorProfile } from "@/types/database";
 import { User } from "@supabase/supabase-js";
 import ProfileAvatar from "./ProfileAvatar";
 import ProfileInfo from "./ProfileInfo";
 import ProfileActions from "./ProfileActions";
 
 interface ProfileContentProps {
-  profile: Profile | null;
+  profile: JuniorProfile | null;
   user: User | null;
 }
 

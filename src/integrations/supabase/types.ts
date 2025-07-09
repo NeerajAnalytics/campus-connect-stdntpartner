@@ -14,26 +14,32 @@ export type Database = {
   }
   public: {
     Tables: {
-      profiles: {
+      junior_profile: {
         Row: {
           created_at: string | null
+          email: string | null
           gender: string | null
           id: string
           name: string | null
+          phone: string | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
+          email?: string | null
           gender?: string | null
           id: string
           name?: string | null
+          phone?: string | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          email?: string | null
           gender?: string | null
           id?: string
           name?: string | null
+          phone?: string | null
           updated_at?: string | null
         }
         Relationships: []

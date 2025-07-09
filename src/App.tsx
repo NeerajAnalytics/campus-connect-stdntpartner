@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
-import InitialPage from "./pages/InitialPage";
+
 import AuthPage from "./pages/AuthPage";
 import JuniorSignupPage from "./pages/JuniorSignupPage";
 import JuniorLoginPage from "./pages/JuniorLoginPage";
@@ -52,7 +52,6 @@ function App() {
               <div className="App w-full min-h-screen">
                 <Routes>
                   <Route path="/" element={<Index />} />
-                  <Route path="/initial" element={<InitialPage />} />
                   <Route path="/auth" element={<AuthPage />} />
                   <Route path="/junior-signup" element={<JuniorSignupPage />} />
                   <Route path="/junior-login" element={<JuniorLoginPage />} />
