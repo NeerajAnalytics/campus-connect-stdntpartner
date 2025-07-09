@@ -41,50 +41,54 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // First check if user exists in auth.users table
-    const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(cleanEmail);
-    
-    console.log("Auth user check:", { 
-      email: authUser?.user?.email, 
-      id: authUser?.user?.id,
-      error: authError?.message 
-    });
-
-    // If user doesn't exist in auth.users, they're not registered
-    if (!authUser?.user) {
-      console.log("Email not found in auth.users:", cleanEmail);
-      throw new Error('Email ID is not registered. Please signup first.');
-    }
-
-    const userId = authUser.user.id;
-
-    // Check if this is a junior user (exists in profiles table)
-    const { data: juniorProfile, error: juniorError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', userId)
-      .maybeSingle();
-
-    // Check if this is a senior user (exists in senior_profiles table)  
+    // Check if this is a senior user first (senior_profiles has email field)
     const { data: seniorProfile, error: seniorError } = await supabase
       .from('senior_profiles')
       .select('id, email')
-      .eq('id', userId)
+      .eq('email', cleanEmail)
       .maybeSingle();
 
-    console.log("Junior profile check:", { 
-      found: !!juniorProfile, 
-      error: juniorError?.message 
-    });
     console.log("Senior profile check:", { 
       found: !!seniorProfile, 
+      email: seniorProfile?.email,
       error: seniorError?.message 
     });
 
-    // User exists in auth but should also exist in either profiles or senior_profiles
-    if (!juniorProfile && !seniorProfile) {
-      console.log("User exists in auth but no profile found:", cleanEmail);
-      // Still allow password reset as they have an auth account
+    if (seniorProfile) {
+      // This is a senior user, proceed with password reset
+      console.log("Senior user found, proceeding with password reset");
+    } else {
+      // Check if this is a junior user (check auth.users first, then profiles table)
+      const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(cleanEmail);
+      
+      console.log("Auth user check for junior:", { 
+        email: authUser?.user?.email, 
+        id: authUser?.user?.id,
+        error: authError?.message 
+      });
+
+      if (authUser?.user) {
+        // Check if this user exists in profiles table (junior)
+        const { data: juniorProfile, error: juniorError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', authUser.user.id)
+          .maybeSingle();
+
+        console.log("Junior profile check:", { 
+          found: !!juniorProfile, 
+          userId: authUser.user.id,
+          error: juniorError?.message 
+        });
+
+        if (!juniorProfile) {
+          console.log("User exists in auth but not in profiles table:", cleanEmail);
+          throw new Error('Email ID is not registered. Please signup first.');
+        }
+      } else {
+        console.log("Email not found in auth.users or senior_profiles:", cleanEmail);
+        throw new Error('Email ID is not registered. Please signup first.');
+      }
     }
 
     console.log("User found, proceeding to send verification code");

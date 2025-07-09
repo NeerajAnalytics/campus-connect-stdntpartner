@@ -21,30 +21,8 @@ export interface SeniorProfile {
   updated_at: string;
 }
 
-export interface Report {
-  id: string;
-  user_id: string;
-  name: string;
-  email: string;
-  phone?: string | null;
-  issue_description: string;
-  proofs?: string | null;
-  senior_name?: string | null;
-  senior_branch?: string | null;
-  senior_phone?: string | null;
-  senior_email?: string | null;
-  senior_college_id?: string | null;
-  junior_name?: string | null;
-  junior_branch?: string | null;
-  junior_phone?: string | null;
-  junior_email?: string | null;
-  roll_no?: string | null;
-  created_at: string;
-}
-
 // Add table type definitions for type-safe database access
 export interface Tables {
   profiles: Profile;
   senior_profiles: SeniorProfile;
-  reports: Report;
 }

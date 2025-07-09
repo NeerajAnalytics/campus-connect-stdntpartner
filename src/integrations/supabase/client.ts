@@ -21,6 +21,3 @@ export const getSeniorProfiles = () => {
   return supabase.from('senior_profiles');
 };
 
-export const getReports = () => {
-  return supabase.from('reports');
-};
