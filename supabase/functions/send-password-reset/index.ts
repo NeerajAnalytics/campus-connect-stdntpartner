@@ -8,7 +8,6 @@ const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 interface PasswordResetRequest {
   email: string;
-  code: string;
 }
 
 serve(async (req) => {
@@ -26,10 +25,10 @@ serve(async (req) => {
       throw new Error('Request body is empty');
     }
 
-    const { email, code }: PasswordResetRequest = JSON.parse(requestBody);
+    const { email }: PasswordResetRequest = JSON.parse(requestBody);
     
-    if (!email || !code) {
-      throw new Error('Email and code are required');
+    if (!email) {
+      throw new Error('Email is required');
     }
 
     // Clean up email - trim spaces and convert to lowercase
@@ -91,7 +90,26 @@ serve(async (req) => {
       }
     }
 
-    console.log("User found, proceeding to send verification code");
+    console.log("User found, proceeding to generate and send verification code");
+
+    // Generate 6-digit verification code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log("Generated 6-digit code:", code);
+
+    // Store verification code in database
+    const { error: insertError } = await supabase
+      .from('verification_codes')
+      .insert({
+        email: cleanEmail,
+        code: code
+      });
+
+    if (insertError) {
+      console.error("Error storing verification code:", insertError);
+      throw new Error('Failed to store verification code');
+    }
+
+    console.log("Verification code stored successfully");
 
     // Check if RESEND_API_KEY is available
     const apiKey = Deno.env.get("RESEND_API_KEY");

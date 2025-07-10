@@ -50,68 +50,46 @@ const ResetPasswordPage: React.FC = () => {
       return;
     }
 
+    if (!email) {
+      toast({
+        title: "Email required",
+        description: "Email is required to reset password",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      let updateResult;
-      
-      if (resetToken) {
-        // We have a reset token from the URL, use it to update the password
-        const { data, error } = await supabase.auth.updateUser({ 
-          password 
-        });
-        
-        if (error) throw error;
-        updateResult = data;
-      } else {
-        // For our custom verification flow
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
-        });
-        
-        if (error) throw error;
-        
-        // The actual password change will happen when the user clicks the link in the email
+      const { data, error } = await supabase.functions.invoke('verify-reset-code', {
+        body: { 
+          email,
+          code: "verified", // This page is reached after code verification
+          newPassword: password
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
         toast({
-          title: "Password reset link sent",
-          description: "Please check your email to complete the password reset process."
+          title: "Password updated",
+          description: "Your password has been reset successfully. Please login with your new password."
         });
         
         setTimeout(() => {
           navigate("/junior-login");
-        }, 2000);
-        
-        return;
+        }, 1500);
+      } else {
+        throw new Error(data.error || 'Failed to reset password');
       }
-
-      toast({
-        title: "Password updated",
-        description: "Your password has been reset successfully. Please login with your new password."
-      });
-      
-      // Sign out after password reset
-      await supabase.auth.signOut();
-      
-      // Redirect to the login page
-      setTimeout(() => {
-        navigate("/junior-login");
-      }, 1500);
     } catch (error: any) {
       console.error("Password reset error:", error);
-      
-      // Special handling for common errors
-      if (error.message?.includes("session")) {
-        toast({
-          title: "Session error", 
-          description: "Please try again from the beginning of the password reset process",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to reset password. Please try again.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reset password. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

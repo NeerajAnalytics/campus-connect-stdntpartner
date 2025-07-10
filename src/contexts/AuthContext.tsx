@@ -50,9 +50,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, name: string, gender: string, collegeId?: string, rollNo?: string, phone?: string, region?: string) => {
     try {
-      const result = await signUpUser(email, password, name, gender, collegeId, rollNo, phone, region);
+      console.log("Starting signup process with email:", email);
+      
+      const userData: any = {
+        name,
+        gender,
+        email,
+      };
+      
+      // Add senior-specific data if provided
+      if (collegeId || rollNo) {
+        userData.college_id = collegeId || rollNo;
+        userData.roll_no = rollNo || collegeId;
+        userData.phone = phone;
+        userData.region = region;
+      } else {
+        userData.phone = phone;
+      }
+
+      // Sign up the user first
+      const { error, data } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: userData,
+          emailRedirectTo: `${window.location.origin}/junior-login`,
+        }
+      });
+
+      if (error) {
+        console.error("Signup error:", error);
+        throw error;
+      }
+
+      console.log("User signed up successfully:", data.user?.id);
+
+      // Wait a moment for auth to settle
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Create profile using service role via edge function
+      const profileResponse = await supabase.functions.invoke('create-profile', {
+        body: {
+          userId: data.user?.id,
+          userData: userData,
+          isSenior: !!(collegeId || rollNo)
+        }
+      });
+
+      if (profileResponse.error) {
+        console.error("Profile creation error:", profileResponse.error);
+        throw new Error('Failed to create profile: ' + profileResponse.error.message);
+      }
+
+      console.log("Profile created successfully");
+
+      toast({
+        title: "Sign up successful!",
+        description: "Please check your email to confirm your account before logging in.",
+      });
+
+      const result = { success: true, isSenior: !!(collegeId || rollNo) };
       navigateAfterSignUp(result.isSenior);
     } catch (error: any) {
+      console.error("Signup process failed:", error);
       toast({
         title: "Error signing up",
         description: error.message,

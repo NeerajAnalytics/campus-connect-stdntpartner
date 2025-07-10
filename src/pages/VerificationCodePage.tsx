@@ -39,34 +39,24 @@ const VerificationCodePage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const storedCodeData = sessionStorage.getItem(`vcode_${email}`);
-      
-      if (!storedCodeData) {
-        throw new Error("No verification code found. Please request a new code.");
-      }
-
-      const { code: storedCode, timestamp } = JSON.parse(storedCodeData);
-      
-      // Check if code is expired (10 minutes = 600000 ms)
-      const isExpired = Date.now() - timestamp > 600000;
-      if (isExpired) {
-        sessionStorage.removeItem(`vcode_${email}`);
-        throw new Error("Verification code has expired. Please request a new code.");
-      }
-      
-      if (storedCode !== verificationCode) {
-        throw new Error("Invalid verification code. Please try again.");
-      }
-      
-      // Code is valid, clean up and proceed
-      sessionStorage.removeItem(`vcode_${email}`);
-      
-      toast({
-        title: "Code verified",
-        description: "Redirecting to password reset page...",
+      const { data, error } = await supabase.functions.invoke('verify-reset-code', {
+        body: { 
+          email,
+          code: verificationCode
+        }
       });
-      
-      navigate(`/reset-password?email=${encodeURIComponent(email)}`);
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast({
+          title: "Code verified",
+          description: "Redirecting to password reset page...",
+        });
+        navigate(`/reset-password?email=${encodeURIComponent(email)}`);
+      } else {
+        throw new Error(data.error || 'Invalid verification code');
+      }
     } catch (error: any) {
       console.error("Verification error:", error);
       toast({
@@ -92,37 +82,21 @@ const VerificationCodePage: React.FC = () => {
     }
     
     try {
-      const newVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-      const codeData = {
-        code: newVerificationCode,
-        timestamp: Date.now(),
-        email: email
-      };
-      sessionStorage.setItem(`vcode_${email}`, JSON.stringify(codeData));
-      
-      console.log("Resending verification code to:", email);
-      
-      // Send new code via email
-      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-password-reset', {
-        body: { 
-          email,
-          code: newVerificationCode
-        }
+      const { data, error } = await supabase.functions.invoke('send-password-reset', {
+        body: { email }
       });
 
-      if (emailError) {
-        throw new Error(`Failed to send email: ${emailError.message}`);
-      }
+      if (error) throw error;
 
-      if (emailData && emailData.success === false) {
-        throw new Error(emailData.error || "Failed to resend verification code");
+      if (data.success) {
+        setCountdown(60);
+        toast({
+          title: "Code resent",
+          description: "A new verification code has been sent to your email",
+        });
+      } else {
+        throw new Error(data.error || 'Failed to resend verification code');
       }
-      
-      setCountdown(60);
-      toast({
-        title: "Code resent",
-        description: "A new verification code has been sent to your email",
-      });
     } catch (error: any) {
       console.error("Resend error:", error);
       toast({

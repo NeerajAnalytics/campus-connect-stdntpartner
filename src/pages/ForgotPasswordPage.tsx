@@ -25,55 +25,26 @@ const ForgotPasswordPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Clean up email - trim spaces and convert to lowercase
       const cleanEmail = email.trim().toLowerCase();
       
-      // Generate a 6-digit code for verification
-      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-      
-      // Store code with timestamp for expiration
-      const codeData = {
-        code: verificationCode,
-        timestamp: Date.now(),
-        email: cleanEmail
-      };
-      sessionStorage.setItem(`vcode_${cleanEmail}`, JSON.stringify(codeData));
-      
-      console.log("Sending verification code to:", cleanEmail);
-      console.log("Generated code:", verificationCode);
-      
-      // Send the code via email using our edge function
-      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-password-reset', {
-        body: { 
-          email: cleanEmail,
-          code: verificationCode
-        }
+      const { data, error } = await supabase.functions.invoke('send-password-reset', {
+        body: { email: cleanEmail }
       });
 
-      console.log("Email function response:", emailData);
-      console.log("Email function error:", emailError);
+      if (error) throw error;
 
-      if (emailError) {
-        console.error("Email sending error:", emailError);
-        throw new Error(`Failed to send email: ${emailError.message}`);
+      if (data.success) {
+        toast({
+          title: "Verification code sent!",
+          description: "Check your email for the 6-digit verification code.",
+        });
+        navigate(`/verification-code?email=${encodeURIComponent(cleanEmail)}`);
+      } else {
+        throw new Error(data.error || 'Failed to send verification code');
       }
-
-      // Check if the response indicates success or failure
-      if (emailData && emailData.success === false) {
-        throw new Error(emailData.error || "Failed to send verification code");
-      }
-
-      toast({
-        title: "Verification code sent",
-        description: "Please check your email for the 6-digit verification code.",
-      });
-      
-      // Navigate to the verification code page with cleaned email
-      navigate(`/verification-code?email=${encodeURIComponent(cleanEmail)}`);
     } catch (error: any) {
       console.error("Password reset error:", error);
       
-      // More specific error messages
       let errorMessage = "Failed to send verification code. Please try again.";
       
       if (error.message.includes("Email ID is not registered")) {
