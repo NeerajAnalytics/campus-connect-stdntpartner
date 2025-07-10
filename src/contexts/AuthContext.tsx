@@ -56,17 +56,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         name,
         gender,
         email,
+        phone: phone || null,
       };
       
       // Add senior-specific data if provided
       if (collegeId || rollNo) {
         userData.college_id = collegeId || rollNo;
         userData.roll_no = rollNo || collegeId;
-        userData.phone = phone;
         userData.region = region;
-      } else {
-        userData.phone = phone;
       }
+
+      console.log("User data prepared for signup:", userData);
 
       // Sign up the user first
       const { error, data } = await supabase.auth.signUp({
@@ -88,18 +88,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Wait a moment for auth to settle
       await new Promise(resolve => setTimeout(resolve, 1000));
 
+      const isSenior = !!(collegeId || rollNo);
+      console.log("Calling create-profile function with isSenior:", isSenior);
+
       // Create profile using service role via edge function
       const profileResponse = await supabase.functions.invoke('create-profile', {
         body: {
           userId: data.user?.id,
           userData: userData,
-          isSenior: !!(collegeId || rollNo)
+          isSenior: isSenior
         }
       });
 
+      console.log("Profile response:", profileResponse);
+
       if (profileResponse.error) {
         console.error("Profile creation error:", profileResponse.error);
-        throw new Error('Failed to create profile: ' + profileResponse.error.message);
+        throw new Error(`Failed to create profile: ${profileResponse.error.message || 'Edge Function returned a non-2xx status code'}`);
       }
 
       console.log("Profile created successfully");
@@ -109,8 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Please check your email to confirm your account before logging in.",
       });
 
-      const result = { success: true, isSenior: !!(collegeId || rollNo) };
-      navigateAfterSignUp(result.isSenior);
+      navigateAfterSignUp(isSenior);
     } catch (error: any) {
       console.error("Signup process failed:", error);
       toast({
@@ -118,6 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: error.message,
         variant: "destructive",
       });
+      throw error; // Re-throw to allow calling component to handle
     }
   };
 
