@@ -1,1 +1,22 @@
 project_id = "ivdiyobtekwhijresrvn"
+
+[functions.send-password-reset]
+verify_jwt = false
+
+[functions.verify-reset-code]
+verify_jwt = false
+
+[functions.create-profile]
+verify_jwt = false
+
+[functions.setup-storage]
+verify_jwt = false
+
+[functions.send-report-email]
+verify_jwt = false
+
+[functions.send-report]
+verify_jwt = false
+
+[functions.send-senior-report]
+verify_jwt = false

@@ -88,32 +88,73 @@ export const createProfileIfNotExists = async (userId: string, userMetadata: any
 };
 
 export const fetchUserProfile = async (userId: string) => {
-  const { data, error } = await supabase
-    .from('junior_profile')
-    .select('*')
-    .eq('id', userId)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('junior_profile')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
 
-  if (error && error.code !== 'PGRST116') {
+    if (error) {
+      console.error("Error fetching user profile:", error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error in fetchUserProfile:", error);
     throw error;
   }
+};
 
-  return data;
+export const fetchSeniorProfile = async (userId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('senior_profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching senior profile:", error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error in fetchSeniorProfile:", error);
+    throw error;
+  }
 };
 
 export const updateUserProfile = async (userId: string, profileData: { name?: string; gender?: string; email?: string; phone?: string }) => {
-  const { data, error } = await supabase
-    .from('junior_profile')
-    .update(profileData)
-    .eq('id', userId)
-    .select()
-    .single();
+  try {
+    console.log("Updating junior profile for user:", userId, "with data:", profileData);
+    
+    const updateData: any = {};
+    if (profileData.name !== undefined) updateData.name = profileData.name;
+    if (profileData.gender !== undefined) updateData.gender = profileData.gender;
+    if (profileData.email !== undefined) updateData.email = profileData.email;
+    if (profileData.phone !== undefined) updateData.phone = profileData.phone;
 
-  if (error) {
+    const { data, error } = await supabase
+      .from('junior_profile')
+      .update(updateData)
+      .eq('id', userId)
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error updating junior profile:", error);
+      throw error;
+    }
+
+    console.log("Junior profile updated successfully:", data);
+    return data;
+  } catch (error) {
+    console.error("Error in updateUserProfile:", error);
     throw error;
   }
-
-  return data;
 };
 
 export const updateSeniorProfile = async (userId: string, data: {
