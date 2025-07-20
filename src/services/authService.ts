@@ -89,7 +89,7 @@ export const signUpUser = async (
 
   toast({
     title: "Sign up successful!",
-    description: "Please check your email to confirm your account before logging in.",
+    description: "Your account has been created successfully. You can now log in.",
   });
 
   return { success: true, isSenior: !!(collegeId || rollNo) };
@@ -102,16 +102,6 @@ export const signInUser = async (email: string, password: string) => {
   });
 
   if (error) {
-    // If the error mentions email not confirmed, provide specific guidance
-    if (error.message.includes("Email not confirmed")) {
-      // Send another confirmation email
-      await supabase.auth.resend({
-        type: 'signup',
-        email,
-      });
-      
-      throw new Error("Please check your email to confirm your account. A new confirmation email has been sent.");
-    }
     throw error;
   }
 
