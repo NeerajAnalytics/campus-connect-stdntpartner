@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
+import { handleAuthError, validateEmail, validatePassword, sanitizeEmail } from "@/utils/authHelpers";
+
 
 export const signUpUser = async (
   email: string, 
@@ -11,14 +13,26 @@ export const signUpUser = async (
   phone?: string,
   region?: string
 ) => {
-  console.log("Signing up user with data:", {
-    email, name, gender, collegeId, rollNo, phone, region
-  });
+  try {
+    // Validate inputs
+    const cleanEmail = sanitizeEmail(email);
+    if (!validateEmail(cleanEmail)) {
+      throw new Error("Please enter a valid email address");
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      throw new Error(passwordValidation.message || "Invalid password");
+    }
+
+    console.log("Signing up user with data:", {
+      email: cleanEmail, name, gender, collegeId, rollNo, phone, region
+    });
   
   const userData: any = {
     name,
     gender,
-    email, // Make sure email is included in metadata
+    email: cleanEmail, // Make sure email is included in metadata
   };
   
   // Add senior-specific data if provided
@@ -34,7 +48,7 @@ export const signUpUser = async (
   }
 
   const { error, data } = await supabase.auth.signUp({
-    email,
+    email: cleanEmail,
     password,
     options: {
       data: userData,
@@ -44,7 +58,8 @@ export const signUpUser = async (
 
   if (error) {
     console.error("Signup error:", error);
-    throw error;
+    const authError = handleAuthError(error);
+    throw new Error(authError.message);
   }
 
   // Create profile based on user type
@@ -57,7 +72,7 @@ export const signUpUser = async (
           id: data.user.id,
           name,
           gender,
-          email,
+          email: cleanEmail,
           phone,
           college_id: collegeId,
           roll_no: rollNo,
@@ -76,7 +91,7 @@ export const signUpUser = async (
           id: data.user.id,
           name,
           gender,
-          email,
+          email: cleanEmail,
           phone,
         });
 
@@ -93,16 +108,28 @@ export const signUpUser = async (
   });
 
   return { success: true, isSenior: !!(collegeId || rollNo) };
+  } catch (error) {
+    console.error("Signup error:", error);
+    const authError = handleAuthError(error);
+    throw new Error(authError.message);
+  }
 };
 
 export const signInUser = async (email: string, password: string) => {
-  const { error, data } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+  try {
+    const cleanEmail = sanitizeEmail(email);
+    if (!validateEmail(cleanEmail)) {
+      throw new Error("Please enter a valid email address");
+    }
+
+    const { error, data } = await supabase.auth.signInWithPassword({
+      email: cleanEmail,
+      password,
+    });
 
   if (error) {
-    throw error;
+    const authError = handleAuthError(error);
+    throw new Error(authError.message);
   }
 
   toast({
@@ -110,6 +137,11 @@ export const signInUser = async (email: string, password: string) => {
   });
 
   return data;
+  } catch (error) {
+    console.error("Sign in error:", error);
+    const authError = handleAuthError(error);
+    throw new Error(authError.message);
+  }
 };
 
 export const signOutUser = async () => {
