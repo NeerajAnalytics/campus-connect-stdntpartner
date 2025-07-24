@@ -67,16 +67,21 @@ serve(async (req) => {
       console.log("Updating password for user");
       
       // Get user by email
-      const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(cleanEmail);
+      const { data: authUser, error: authError } = await supabase.auth.admin.listUsers({
+        page: 1,
+        perPage: 1
+      });
       
-      if (authError || !authUser.user) {
+      const foundUser = authUser?.users?.find(user => user.email === cleanEmail);
+      
+      if (authError || !foundUser) {
         console.error("Error getting user:", authError);
         throw new Error('User not found');
       }
 
       // Update user password
       const { error: passwordError } = await supabase.auth.admin.updateUserById(
-        authUser.user.id,
+        foundUser.id,
         { password: newPassword }
       );
 

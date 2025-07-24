@@ -58,25 +58,30 @@ serve(async (req) => {
       console.log("Senior user found, proceeding with password reset");
     } else {
       // Check if this is a junior user (check auth.users first, then profiles table)
-      const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(cleanEmail);
+      const { data: authUser, error: authError } = await supabase.auth.admin.listUsers({
+        page: 1,
+        perPage: 1
+      });
+      
+      const foundUser = authUser?.users?.find(user => user.email === cleanEmail);
       
       console.log("Auth user check for junior:", { 
-        email: authUser?.user?.email, 
-        id: authUser?.user?.id,
+        email: foundUser?.email, 
+        id: foundUser?.id,
         error: authError?.message 
       });
 
-      if (authUser?.user) {
+      if (foundUser) {
         // Check if this user exists in junior_profile table (junior)
         const { data: juniorProfile, error: juniorError } = await supabase
           .from('junior_profile')
           .select('id, email')
-          .eq('id', authUser.user.id)
+          .eq('id', foundUser.id)
           .maybeSingle();
 
         console.log("Junior profile check:", { 
           found: !!juniorProfile, 
-          userId: authUser.user.id,
+          userId: foundUser.id,
           error: juniorError?.message 
         });
 
